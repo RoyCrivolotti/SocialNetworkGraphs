@@ -1,6 +1,6 @@
 /**
  * @author UCSD MOOC development team
- * 
+ *
  * Abstract grader class that includes methods common to concrete graders.
  *
  */
