@@ -6,10 +6,12 @@ Capstone project for the specialization "Object Oriented Java Programming: Data 
 Link to the course: https://www.coursera.org/specializations/java-object-oriented
 
 The first task is a warm-up exercise where I was supposed to design a graph representation in Java; how to design this graph was entirely up to me:
-  – Design and implement a set of classes to store data as a graph (this graph must implement the provided interface in the base code, and the class that implements this interface must be named CapGraph). At least have a method to add edges and vertices.
-  – Write a method that extracts a subgraph (called an "egonet") from the Facebook data provided in the base code.
-    – An egonet is a subgraph that includes the vertex center and all of the vertices, v_i, that are directly connected by an edge from center to v_i and all of the edges between these vertices that are present in the original graph. Examples of egonets are given in the lectures in this module.If the vertex center is not present in the original graph, this method should return an empty Graph.
-  – Write a method that finds the strongly connected components (SCCs) in a directed graph.
+
+– Design and implement a set of classes to store data as a graph (this graph must implement the provided interface in the base code, and the class that implements this interface must be named CapGraph). At least have a method to add edges and vertices.
+
+– Write a method that extracts a subgraph (called an "egonet") from the Facebook data provided in the base code. An egonet is a subgraph that includes the vertex center and all of the vertices, v_i, that are directly connected by an edge from center to v_i and all of the edges between these vertices that are present in the original graph. Examples of egonets are given in the lectures in this module.If the vertex center is not present in the original graph, this method should return an empty Graph.
+
+– Write a method that finds the strongly connected components (SCCs) in a directed graph.
 
 After the warm up assignment, I could either extend my work on Egonets or SCCs to build up the capstone project, or I could choose a completely new avenue for my project.
 
