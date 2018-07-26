@@ -7,11 +7,11 @@ Link to the course: https://www.coursera.org/specializations/java-object-oriente
 
 The first task is a warm-up exercise where I was supposed to design a graph representation in Java; how to design this graph was entirely up to me:
 
-– Design and implement a set of classes to store data as a graph (this graph must implement the provided interface in the base code, and the class that implements this interface must be named CapGraph). At least have a method to add edges and vertices.
+      – Design and implement a set of classes to store data as a graph (this graph must implement the provided interface in the base code, and the class that implements this interface must be named CapGraph). At least have a method to add edges and vertices.
 
-– Write a method that extracts a subgraph (called an "egonet") from the Facebook data provided in the base code. An egonet is a subgraph that includes the vertex center and all of the vertices, v_i, that are directly connected by an edge from center to v_i and all of the edges between these vertices that are present in the original graph. Examples of egonets are given in the lectures in this module.If the vertex center is not present in the original graph, this method should return an empty Graph.
+      – Write a method that extracts a subgraph (called an "egonet") from the Facebook data provided in the base code. An egonet is a subgraph that includes the vertex center and all of the vertices, v_i, that are directly connected by an edge from center to v_i and all of the edges between these vertices that are present in the original graph. Examples of egonets are given in the lectures in this module.If the vertex center is not present in the original graph, this method should return an empty Graph.
 
-– Write a method that finds the strongly connected components (SCCs) in a directed graph.
+      – Write a method that finds the strongly connected components (SCCs) in a directed graph.
 
 After the warm up assignment, I could either extend my work on Egonets or SCCs to build up the capstone project, or I could choose a completely new avenue for my project.
 
@@ -20,10 +20,13 @@ The backbone of the project is to pick two questions, an easy one that can be an
 //
 
 Starter code:
-  – src/graph: this package contained two files: Graph.java, the graph interface I had to implement for this assignment, and CapGraph.java, the definition of the class that implements the Graph interface (CapGraph.java was basically empty). The graders provided create instances of CapGraph to test my implementation.
-  – src/graph/grader: the graph.grader package contained the code they use to grade my CapGraph implementation at the point of submission. The point of having them myself is to test my code before submitting the assignment.
-  – src/util: the util package contained only one file: GraphLoader.java, a utility class written by the developers of the course; it has a method to load the data files they provide for the warm-up into a Graph object that implements the Graph interface.
-  – data: the root data folder contained a number of files. The data/data_source.txt gives the source of the data files, and the data/README file provides more information about the files in that folder. This files were not to be modified as many were used for grading.
+      – src/graph: this package contained two files: Graph.java, the graph interface I had to implement for this assignment, and CapGraph.java, the definition of the class that implements the Graph interface (CapGraph.java was basically empty). The graders provided create instances of CapGraph to test my implementation.
+      
+      – src/graph/grader: the graph.grader package contained the code they use to grade my CapGraph implementation at the point of submission. The point of having them myself is to test my code before submitting the assignment.
+      
+      – src/util: the util package contained only one file: GraphLoader.java, a utility class written by the developers of the course; it has a method to load the data files they provide for the warm-up into a Graph object that implements the Graph interface.
+      
+      – data: the root data folder contained a number of files. The data/data_source.txt gives the source of the data files, and the data/README file provides more information about the files in that folder. This files were not to be modified as many were used for grading.
 
 //
 
