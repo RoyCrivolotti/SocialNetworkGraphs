@@ -5,6 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @author Rou Gabriel Crivolotti
+ * This class represents the node objects/the graph vertices. There will be no comments on each method
+ * because of how simple the class is
+ */
+
 public class CapNode implements Node {
     private int id;
     private List<Integer> neighbours;
@@ -26,11 +32,6 @@ public class CapNode implements Node {
         return (this.neighbours.add(neighbour) && this.neighbourSet.add(neighbour));
     }
 
-    /**
-     * Get the list of neighbours.
-     * @return a copy of the list; the user can access the neighbour node
-     * objects but not modify the list.
-     */
     @Override
     public List<Integer> getNeighbours() {
         return new ArrayList<>(this.neighbours);

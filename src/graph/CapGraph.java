@@ -233,6 +233,5 @@ public class CapGraph implements Graph {
 
         Graph TestGraph = new CapGraph();
         util.GraphLoader.loadGraph(TestGraph, "data/small_test_graph.txt");
-
     }
 }

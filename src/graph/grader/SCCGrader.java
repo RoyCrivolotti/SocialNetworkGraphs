@@ -1,11 +1,9 @@
+package graph.grader;
+
 /**
  * @author UCSD MOOC development team
- *
  * Grader for the SCC assignment.
- *
  */
-
-package graph.grader;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

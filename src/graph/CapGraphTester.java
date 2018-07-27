@@ -1,10 +1,12 @@
-/**
- * This set of tests don't aim to be exhaustive, in that I do not test here
- * the egonet and SCC methods, since for that I have the graders and they are more complicated to
- * develop tests on...this is just to test a couple of simple things I wanted to make sure
- * wouldn't bug the more complex algorithms, causing a mistake that I'd chase in the wrong place
- */
 package graph;
+
+/**
+ * @author Roy Gabriel Crivolotti
+ * This set of tests don't aim to be exhaustive. I do not test here the egonet and SCC methods,
+ * since they are more complicated to develop tests on and for that I have the graders. This is
+ * just to test a couple of things I wanted to make sure wouldn't bug the more complex algorithms,
+ * causing a mistake that I'd chase in the wrong place
+ */
 
 import static org.junit.Assert.*;
 
