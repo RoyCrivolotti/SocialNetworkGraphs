@@ -29,6 +29,4 @@ Starter code:
       
       – data: the root data folder contained a number of files. The data/data_source.txt gives the source of the data files, and the data/README file provides more information about the files in that folder. This files were not to be modified as many were used for grading.
 
-//
-
 Every file that is not those detailed in the 'starter code' section, be that a class or a data file, is something added by me. Also, this CapGraph class was authored by me.
