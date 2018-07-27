@@ -20,6 +20,7 @@ The backbone of the project is to pick two questions, an easy one that can be an
 //
 
 Starter code:
+      
       – src/graph: this package contained two files: Graph.java, the graph interface I had to implement for this assignment, and CapGraph.java, the definition of the class that implements the Graph interface (CapGraph.java was basically empty). The graders provided create instances of CapGraph to test my implementation.
       
       – src/graph/grader: the graph.grader package contained the code they use to grade my CapGraph implementation at the point of submission. The point of having them myself is to test my code before submitting the assignment.
