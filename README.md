@@ -3,7 +3,7 @@ Analyzing social network data using the Graph Data Structure.
 
 Capstone project for the specialization "Object Oriented Java Programming: Data Structures and Beyond Specialization" from UC San Diego (in conjunction with Google) through the Coursera learning platform.
 
-Link to the course: https://www.coursera.org/specializations/java-object-oriented
+Link to the specialization: https://www.coursera.org/specializations/java-object-oriented
 
 The first task is a warm-up exercise where I was supposed to design a graph representation in Java; how to design this graph was entirely up to me:
 
