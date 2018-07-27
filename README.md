@@ -17,7 +17,7 @@ After the warm up assignment, I could either extend my work on Egonets or SCCs t
 
 The backbone of the project is to pick two questions, an easy one that can be answered without much more investigation than that which I did for the warm-up exercise, and a more complex one for which I am to do research in books/published papers/wherever, be that to look for questions/problems that interest me or, after I have chosen my question, to read on algorithms that might inspire me on how to write my project. There is another text file in which I define the scope of my capstone project, including the definition of the data I choose to use and base my project on, the questions I will investigate and the algorithms and data structures I'll use to investigate these questions, including an analysis of the appropriateness and limitations of these algorithms.
 
-//
+
 
 Starter code:
       
