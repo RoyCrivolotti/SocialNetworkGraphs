@@ -31,16 +31,16 @@ Girvan-Newman algorithm for community detection
 If a network contains communities loosely connected by edges, meaning less connected than a sub-community itself, then all shortest paths between said communities must go through very few edges, and hence this bridges between communities will have a high betweenness score, implying that by removing such edges we are able to separate communities in an effort to detect them/differentiate them.
 
 Modified version of Brandes algorithm to compute edge-betweenness centrality instead of node-betweenness
-1.    Initialize the betweenness centrality score of each vertex to zero
-2.    For each vertex in the graph:
-        a.    Initialize a Stack, a Queue and three Arrays: one to count the number of shortest paths from each vertex to the root of the current iteration, one to measure the distance of each vertex from the root, which equals the minimum number of edges between the vertex and the root (initially set to infinity), and an array of linked lists, where each vertex has a linked list with all the vertices that precede it in the BFS (that is, the ‘node’s parents’).
-        b.    Enqueue a vertex.
-        c.    While the queue is not empty:
-                    i.    Dequeue a node from the queue and push the node to the stack, proceeding to perform a BFS traversal from the given root to find the shortest path to all other vertices. While performing the traversal, the distance from the root to each vertex is computed.
-        d.    Compute the betweenness centrality using Brandes’s dependency accumulation technique, which means that while the stack is not empty:
-                    i.    Pop a vertex from the stack, which contains the vertices in order of non-increasing distance from the root, and for all of vertices in its linked list:
-                                    1.    While in the original version, the algorithm known as Algorithm 1 used Brandes’s technique to sum all pair-dependencies without having to do the sum explicitly because of the recursive relation of the partial sums, a slight tweak allows us to calculate edge betweenness instead of node-betweenness (Brandes, 2007: 10-11).
-                                    2.    If the node popped from the stack is not equal to the root, then the betweenness centrality score of the node popped from the stack is its score plus its delta, as defined by Brandes.
+        1. Initialize the betweenness centrality score of each vertex to zero
+        2. For each vertex in the graph:
+                - Initialize a Stack, a Queue and three Arrays: one to count the number of shortest paths from each vertex to the root of the current iteration, one to measure the distance of each vertex from the root, which equals the minimum number of edges between the vertex and the root (initially set to infinity), and an array of linked lists, where each vertex has a linked list with all the vertices that precede it in the BFS (that is, the ‘node’s parents’).
+                - Enqueue a vertex.
+                - While the queue is not empty:
+                        - Dequeue a node from the queue and push the node to the stack, proceeding to perform a BFS traversal from the given root to find the shortest path to all other vertices. While performing the traversal, the distance from the root to each vertex is computed.
+                - Compute the betweenness centrality using Brandes’s dependency accumulation technique, which means that while the stack is not empty:
+                        - Pop a vertex from the stack, which contains the vertices in order of non-increasing distance from the root, and for all of vertices in its linked list:
+                                - While in the original version, the algorithm known as Algorithm 1 used Brandes’s technique to sum all pair-dependencies without having to do the sum explicitly because of the recursive relation of the partial sums, a slight tweak allows us to calculate edge betweenness instead of node-betweenness (Brandes, 2007: 10-11).
+                                - If the node popped from the stack is not equal to the root, then the betweenness centrality score of the node popped from the stack is its score plus its delta, as defined by Brandes.
 
 The algorithm designed by Brandes basically allows one to discover the most important nodes in a graph. Using Girvan and Newman’s incredibly clear explanation in layman’s terms, “if a network contains communities or groups that are only loosely connected by a few inter-group edges, then all shortest paths between different communities must go along one of these few edges. Thus, the edges connecting communities will have high edge betweenness. By removing these edges, we separate groups from one another and so reveal the underlying community structure of the graph. (Girvan and Newman, 2001: p. 3)”.
 
