@@ -14,13 +14,9 @@ The easy task that will be addressed is finding the list of second-level friends
 
 The hard problem, and the main theme of the project, is to implement Brandes algorithm for edge-betweenness centrality inside of Girvan-Newman’s algorithm for community detection. After doing some humble research, I’ve learned of the progress made in approximately the last two decades in the study of community-detection algorithms, and I’m now fascinated with the possibilities. The practical implications of being able to detect sub-communities in large and relatively large networks are instinctively huge, but several applications are not obvious, or at least they weren’t to me this past couple of weeks when I first started learning about the topic.
 
-What astonished me the most was the realization that one could separate one community into its different components in many different ways, approaching the overall coPammunity with different definitions of what the nodes in the graph would come to represent, as well as the edges. This idea implies that a single community can be deconstructed differently depending on what the analysis is focused and interested in. For example, my first idea for the capstone project, and one with which I couldn't move forward because of the difficulty implied, was to take one month of Reddit comments, where the nodes would be the users and the edges or relationships between them their similar activity on Reddit, hence allowing me to identify, or at least to try to identify, the existence of sub-communities in Reddit that would span different subreddits; that is, the sub-communities wouldn’t be defined simply by subreddit, but by user interactions, which could imply that there were groups of users interacting with each other in different subreddits, showing a different view of how the Reddit ecosystem is conformed. At the end I’ll elaborate on this idea because I intend to revisit this when I am capable of overcoming the difficulties, and hence I’d like it to be written in this project summary what the first approach was, why I failed, what I tried to do not to fail in the first place, and my ideas for the future on this topic.
+I am considering implementing this version as well as the one that implements Dijkstra’s algorithm, regardless of its poorer performance. The difference in implementing Brandes algorithm with Dijkstra’s algorithm vs. a BFS traversal of the graph is the difference of working with weighted and unweighted edges. Given that I initially wanted to work with a weighted graph, even thoguh it turns out I'm not doing that I want to try and implement it.
 
-I am, however, considering implementing this version as well as one where I use Dijkstra’s algorithm, regardless of its poorer performance. Regardless, the algorithm doesn’t really change that much that I would feel compelled to detail it separately; at its heart, the concept remains the same.
-
-It seems reasonable to mention that the difference of implementing Brandes algorithm with Dijkstra’s algorithm and a BFS traversal of the graph is the not at all minimal difference of working with weighted and unweighted edges/graph. This is obviously relevant because performance is not the only concern, and one might choose to sacrifice a piece of analysis and conclusions/answers that he or she was looking for in their work, while another person might be looking for something simpler and therefore a drop in performance this big would not only be unwarranted but unreasonable.
-
-ALGORITHM ANALYSIS, LIMITATIONS AND RISKS
+ABOUT THE ALGORITHMS
 
 The easy problem can be solved in polynomial time, taking O(n*m) as I iterate over the neighbors of the central node’s neighbors, with n being the size of the central node’s neighbor list and m being the average size of the neighbor’s neighbors list.
 
@@ -42,7 +38,7 @@ The idea was to implement Brandes algorithm inside of Girvan-Newman's algorithm 
 
 Instead of separating Reddit sub-communities by subreddits, as was my first impulse, I thought of attempting to see if there are sub-communities of users with shared interests that span several subreddits.
 
-REFERENCES
+REFERENCES CONSULTED
 
         •    Brandes, Ulrik, A faster algorithm for betweenness centrality; Journal of Mathematical Sociology 25, 163–177 (2001).
         •    Brandes, Ulrik, On Variants of Shortest-Path Betweenness Centrality and their Generic Computation; Social Networks 30(2):
