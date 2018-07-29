@@ -35,14 +35,25 @@ Modified version of Brandes algorithm to compute edge-betweenness centrality ins
         
         1. Initialize the betweenness centrality score of each vertex to zero
         2. For each vertex in the graph:
-                a. Initialize a Stack, a Queue and three Arrays: one to count the number of shortest paths from each vertex to the root of the current iteration, one to measure the distance of each vertex from the root, which equals the minimum number of edges between the vertex and the root (initially set to infinity), and an array of linked lists, where each vertex has a linked list with all the vertices that precede it in the BFS (that is, the ‘node’s parents’).
+                a. Initialize a Stack, a Queue and three Arrays: one to count the number of shortest paths from each vertex to the root
+                of the current iteration, one to measure the distance of each vertex from the root, which equals the minimum number of
+                edges between the vertex and the root (initially set to infinity), and an array of linked lists, where each vertex has
+                a linked list with all the vertices that precede it in the BFS (that is, the ‘node’s parents’).
                 b. Enqueue a vertex.
                 c. While the queue is not empty:
-                        i. Dequeue a node from the queue and push the node to the stack, proceeding to perform a BFS traversal from the given root to find the shortest path to all other vertices. While performing the traversal, the distance from the root to each vertex is computed.
-                d. Compute the betweenness centrality using Brandes’s dependency accumulation technique, which means that while the stack is not empty:
-                        i. Pop a vertex from the stack, which contains the vertices in order of non-increasing distance from the root, and for all of vertices in its linked list:
-                                1. While in the original version, the algorithm known as Algorithm 1 used Brandes’s technique to sum all pair-dependencies without having to do the sum explicitly because of the recursive relation of the partial sums, a slight tweak allows us to calculate edge betweenness instead of node-betweenness (Brandes, 2007: 10-11).
-                                2. If the node popped from the stack is not equal to the root, then the betweenness centrality score of the node popped from the stack is its score plus its delta, as defined by Brandes.
+                        i. Dequeue a node from the queue and push the node to the stack, proceeding to perform a BFS traversal from the
+                        given root to find the shortest path to all other vertices. While performing the traversal, the distance from
+                        the root to each vertex is computed.
+                d. Compute the betweenness centrality using Brandes’s dependency accumulation technique, which means that while the
+                stack is not empty:
+                        i. Pop a vertex from the stack, which contains the vertices in order of non-increasing distance from the root,
+                        and for all of vertices in its linked list:
+                                1. While in the original version, the algorithm known as Algorithm 1 used Brandes’s technique to sum all
+                                pair-dependencies without having to do the sum explicitly because of the recursive relation of the
+                                partial sums, a slight tweak allows us to calculate edge betweenness instead of node-betweenness
+                                (Brandes, 2007: 10-11).
+                                2. If the node popped from the stack is not equal to the root, then the betweenness centrality score of
+                                the node popped from the stack is its score plus its delta, as defined by Brandes.
 
 The algorithm designed by Brandes basically allows one to discover the most important nodes in a graph. Using Girvan and Newman’s incredibly clear explanation in layman’s terms, “if a network contains communities or groups that are only loosely connected by a few inter-group edges, then all shortest paths between different communities must go along one of these few edges. Thus, the edges connecting communities will have high edge betweenness. By removing these edges, we separate groups from one another and so reveal the underlying community structure of the graph. (Girvan and Newman, 2001: p. 3)”.
 
@@ -98,12 +109,19 @@ I did attempt to read on some newer algorithms on the subject, which imply optim
 
 REFERENCES
 
-•    Brandes, Ulrik, A faster algorithm for betweenness centrality; Journal of Mathematical Sociology 25, 163–177 (2001).
-•    Brandes, Ulrik, On Variants of Shortest-Path Betweenness Centrality and their Generic Computation; Social Networks 30(2): 136-145 (2008).
-•    Clauset, A., Newman, M. E. J. and C. Moore, Finding community structure in very large networks; Physical Review E, 70:066111 (2004).
-•    Gjoka, Minas, Kurant, Maciej, Butts Carter T. and Athina Markopoulou, Walking in Facebook: A Case Study of Unbiased Sampling of OSNs; Proceedings of IEEE INFOCOM '10; San Diego, CA (2010).
-•    Girvan, M. and M. E. J. Newman, Community structure in social and biological networks, Proc. Natl. Acad. Sci. USA 99, 7821–7826 (2002).
-•    Girvan, M. and M. E. J. Newman, Finding and evaluating community structure in networks, Phys. Rev. E 69, 026113 (2004).
-•    Green, O., McColl, R. and D.A. Bader, A fast algorithm for streaming betweenness centrality; in Privacy, Security, Risk and Trust (PASSAT), International Conference on and 2012 International Confernece on Social Computing (SocialCom) (2012).
-•    Newman, M. E. J., Fast algorithm for detecting community structure in networks; Department of Physics and Center for the Study of Complex Systems, University of Michigan; Ann Arbor, MI (2003).
-•    Newman, M. E. J., Scientific collaboration networks: II. Shortest paths, weighted networks, and centrality; Phys. Rev. E 64, 016132 (2001).
+        •    Brandes, Ulrik, A faster algorithm for betweenness centrality; Journal of Mathematical Sociology 25, 163–177 (2001).
+        •    Brandes, Ulrik, On Variants of Shortest-Path Betweenness Centrality and their Generic Computation; Social Networks 30(2):
+        136-145 (2008).
+        •    Clauset, A., Newman, M. E. J. and C. Moore, Finding community structure in very large networks; Physical Review E,
+        70:066111 (2004).
+        •    Gjoka, Minas, Kurant, Maciej, Butts Carter T. and Athina Markopoulou, Walking in Facebook: A Case Study of Unbiased
+        Sampling of OSNs; Proceedings of IEEE INFOCOM '10; San Diego, CA (2010).
+        •    Girvan, M. and M. E. J. Newman, Community structure in social and biological networks, Proc. Natl. Acad. Sci. USA 99, 7821
+        7826 (2002).
+        •    Girvan, M. and M. E. J. Newman, Finding and evaluating community structure in networks, Phys. Rev. E 69, 026113 (2004).
+        •    Green, O., McColl, R. and D.A. Bader, A fast algorithm for streaming betweenness centrality; in Privacy, Security, Risk and
+        Trust (PASSAT), International Conference on and 2012 International Confernece on Social Computing (SocialCom) (2012).
+        •    Newman, M. E. J., Fast algorithm for detecting community structure in networks; Department of Physics and Center for the
+        Study of Complex Systems, University of Michigan; Ann Arbor, MI (2003).
+        •    Newman, M. E. J., Scientific collaboration networks: II. Shortest paths, weighted networks, and centrality; Phys. Rev. E
+        64, 016132 (2001).
