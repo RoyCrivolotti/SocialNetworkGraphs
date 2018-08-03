@@ -79,4 +79,31 @@ public class CapGraphTester {
         Set<Integer> nodesInEgonet = new HashSet<>(Arrays.asList(1, 2, 4));
         assertEquals(nodesInEgonet, ((CapGraph)egonet).getNodes());
     }
+
+    /*
+    Lists of 0's friends of friends (Facebook data):
+    [0, 334], [0, 64, 480, 226, 355, 356, 622, 207, 562, 312, 698, 671], [0, 195, 693, 438, 391, 424, 552]
+    [0, 873, 463], [0, 558, 559], [0, 32, 449, 326, 678, 489, 521, 809, 270, 689, 211, 183, 631, 637]
+    [0, 354, 346], [0, 65, 243], [0, 264, 968, 687]
+     */
+    @Test
+    public void testGetSecondLevelFriends() {
+        CapGraph testGraph = new CapGraph();
+        util.GraphLoader.loadGraph(testGraph, "data/facebook_1000.txt");
+
+// Set<Integer> handmadeAnswer = new HashSet<>(Arrays.asList(334, 64, 207, 226, 312, 355, 356, 480, 562, 558, 559, 622, 671, 698, 195, 391, 424, 438, 552, 693, 463, 873, 32, 183, 211, 270, 326, 449, 489, 521, 631, 637, 678, 689, 809, 346, 354, 65, 243, 264, 687, 968));
+// assertEquals(handmadeAnswer, ((CapGraph) testGraph).get2ndLevelFriends(0));
+
+        List<Integer> nodeNeighbors = testGraph.getNode(0).getNeighbours();
+        Set<Integer> secondLevelFriends = new HashSet<>();
+
+        for (Integer neighbor : nodeNeighbors) {
+            secondLevelFriends.addAll(testGraph.getNode(neighbor).getNeighbourSet());
+        }
+
+        secondLevelFriends.removeAll(nodeNeighbors);
+        secondLevelFriends.remove(0);
+        assertEquals(secondLevelFriends, testGraph.get2ndLevelFriends(0));
+        assertEquals(secondLevelFriends.size(), testGraph.get2ndLevelFriends(0).size());
+    }
 }

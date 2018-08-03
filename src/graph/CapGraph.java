@@ -1,6 +1,7 @@
 package graph;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Roy Gabriel Crivolotti.
@@ -70,7 +71,6 @@ public class CapGraph implements Graph {
             Set<Integer> nodeNeighbour = this.map.get(node).getNeighbourSet();
 
             nodeNeighbour.stream().filter(centerNeighbours::contains).forEach(currNode -> {
-                egonet.addVertex(center);
                 egonet.addEdge(node, currNode);
             });
 	    }
@@ -193,6 +193,33 @@ public class CapGraph implements Graph {
     }
 
     /**
+     * @param id of the user of which the second level friends are to be returned.
+     * @return A set of IDs corresponding to the friends of friends of the ID passed as a parameter.
+     * Obviously, direct friends of the center node are filtered.
+     */
+    public Set<Integer> get2ndLevelFriends(int id) {
+        if (!isNodeContained(id)) return new HashSet<>();
+        return get2ndLevelFriends(this.map.get(id));
+    }
+
+    /**
+     * @param node corresponding to the user of which the second level friends are to be returned.
+     * @return A set of IDs corresponding to the friends of friends of the ID passed as a parameter.
+     */
+    public Set<Integer> get2ndLevelFriends(CapNode node) {
+        List<Integer> nodeNeighbors = node.getNeighbours();
+        Set<Integer> secondLevelFriends = new HashSet<>();
+
+        for (Integer neighbour : nodeNeighbors) {
+            Set<Integer> secondNeighbors = this.map.get(neighbour).getNeighbourSet();
+            secondLevelFriends.addAll(secondNeighbors.stream().filter(i -> !nodeNeighbors.contains(i)).collect(Collectors.toSet()));
+        }
+
+        secondLevelFriends.remove(node.getId());
+        return secondLevelFriends;
+    }
+
+    /**
      * {@inheritDoc}
      * @return A Map with every node in the graph, each associated
      * with a Set of the nodes that are reachable from said vertex
@@ -227,11 +254,29 @@ public class CapGraph implements Graph {
 	    return this.edgeList.size();
     }
 
+    /**
+     * @param id
+     * @return A boolean which states if the ID corresponds to a node in the loaded graph
+     */
+    public boolean isNodeContained(int id) {
+        return this.nodeSet.contains(id);
+    }
+
     public static void main(String[] args) {
         Graph TwitterGraph = new CapGraph();
         util.GraphLoader.loadGraph(TwitterGraph, "data/twitter_combined.txt");
 
         Graph TestGraph = new CapGraph();
         util.GraphLoader.loadGraph(TestGraph, "data/small_test_graph.txt");
+
+//        Set<Integer> secondLevelFriends = ((CapGraph) TestGraph).get2ndLevelFriends(0);
+//        System.out.println(secondLevelFriends);
+//
+//        Graph FacebookGraph = new CapGraph();
+//        util.GraphLoader.loadGraph(FacebookGraph, "data/facebook_1000.txt");
+//
+//        secondLevelFriends = ((CapGraph) FacebookGraph).get2ndLevelFriends(0);
+//        System.out.println(secondLevelFriends);
+//        System.out.println(secondLevelFriends.size());
     }
 }
