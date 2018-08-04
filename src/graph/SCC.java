@@ -19,7 +19,7 @@ public class SCC {
 
         Stack<Integer> finished = dfs(g, toExplore, componentsIDList);
 
-        Graph transposedGraph = transposeGraph(g);
+        Graph transposedGraph = g.transposeGraph();
 
         componentsIDList.clear();
         List<Graph> SCCList = findSCCsDFS(transposedGraph, finished, componentsIDList, g);
@@ -99,26 +99,6 @@ public class SCC {
 
         finished.push(currNodeID);
         SCCList.add(currNodeID);
-    }
-
-    /**
-     * @param graph The graph to transpose
-     * @return The transposed version of the graph
-     * This method takes a graph as a parameter in case it is needed to transpose a subgraph
-     * at a later date, maybe to find sub-communities and the like.
-     */
-    private Graph transposeGraph(CapGraph graph) {
-        Graph transposedGraph = new CapGraph();
-
-        for (Integer id : graph.getNodes()) {
-            transposedGraph.addVertex(id);
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            transposedGraph.addEdge(edge.getTo(), edge.getFrom());
-        }
-
-        return transposedGraph;
     }
 
     public List<Graph> getSCCs() {

@@ -89,19 +89,18 @@ public class CapGraph implements Graph {
     }
 
     /**
-     * @param graph The graph to transpose
-     * @return The transposed version of the graph
-     * This method takes a graph as a parameter in case it is needed to transpose a subgraph
-     * at a later date, maybe to find sub-communities within sub-comminities and the like
+     * This method is public since there are no objects related to the original graph that run a danger of being
+     * unintentionally modified
+     * @return The transposed version of this graph
      */
-    private Graph transposeGraph(CapGraph graph) {
+    public Graph transposeGraph() {
         Graph transposedGraph = new CapGraph();
 
-        for (Integer id : graph.map.keySet()) {
+        for (Integer id : this.map.keySet()) {
             transposedGraph.addVertex(id);
         }
 
-        for (Edge edge : graph.edgeList) {
+        for (Edge edge : this.edgeList) {
             transposedGraph.addEdge(edge.getTo(), edge.getFrom());
         }
 
@@ -134,6 +133,14 @@ public class CapGraph implements Graph {
         secondLevelFriends.remove(node.getId());
         return secondLevelFriends;
     }
+
+    /**
+     *
+     * @return
+     */
+//    public Map<Integer, Set<Integer>> getHighestTwoHop() {
+//
+//    }
 
     /**
      * {@inheritDoc}
