@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author Roy Gabriel Crivolotti.
- * For the warm up assignment, I must implement my Graph in this class.
+ * @author Roy Gabriel Crivolotti
+ * For the warm up assignment, I must implement my Graph in this class
  */
 
 public class CapGraph implements Graph {
@@ -79,104 +79,20 @@ public class CapGraph implements Graph {
     }
 
     /**
-     * {@inheritDoc}
+     * A new class was created to contain the algorithms processing getting the SCCs to keep
+     * classes a little bit shorter and more consice and readable
      * @return A copy of every strongly connected component in the Graph as a list of sub-graphs
      */
 	@Override
 	public List<Graph> getSCCs() {
-        Stack<Integer> toExplore = new Stack<>();
-        toExplore.addAll(this.nodeSet);
-        List<Integer> componentsIDList = new ArrayList<>();
-
-        Stack<Integer> finished = dfs(this, toExplore, componentsIDList);
-
-        Graph transposedGraph = transposeGraph(this);
-
-        componentsIDList.clear();
-	    List<Graph> SCCList = findSCCsDFS(transposedGraph, finished, componentsIDList);
-	    transposedGraph = null;
-
-	    return SCCList;
+	    return new SCC(this).getSCCs();
     }
-
-    /**
-     * @param graph The graph to traverse
-     * @param toExplore Stack of ints to explore –in order–
-     * @param SCCList List of SCC; it's filled when iterating on the original
-     * graph and the transposed, but cleared in the first case
-     * @return Stack of ints i the order in which they were finished
-     */
-    private Stack<Integer> dfs(Graph graph, Stack<Integer> toExplore, List<Integer> SCCList) {
-        Set<Integer> visited = new HashSet<>();
-        Stack<Integer> finished = new Stack<>();
-
-        while (!toExplore.isEmpty()) {
-            int currNodeID = toExplore.pop();
-            if (!visited.contains(currNodeID)) dfsVisit(graph, currNodeID, visited, finished, SCCList);
-        }
-
-        return finished;
-    }
-
-    /**
-     * @param graph The graph to explore
-     * @param toExplore The stack of vertices to explore –in order–
-     * @param componentsIDList List of node's IDs in each SCC; keeps track of each sub-graph's components
-     * @return List of sub-graphs, each a strongly connected component
-     */
-    private List<Graph> findSCCsDFS(Graph graph, Stack<Integer> toExplore, List<Integer> componentsIDList) {
-        List<Graph> SCCList = new ArrayList<>();
-        Set<Integer> visited = new HashSet<>();
-        Stack<Integer> finished = new Stack<>();
-
-        while (!toExplore.isEmpty()) {
-            int currNodeID = toExplore.pop();
-            Graph currGraph = new CapGraph();
-            if (!visited.contains(currNodeID)) {
-                currGraph.addVertex(currNodeID);
-                dfsVisit(graph, currNodeID, visited, finished, componentsIDList);
-                toExplore.removeAll(componentsIDList);
-            }
-
-            for (int id : componentsIDList) {
-                currGraph.addVertex(id);
-                for (int neighbourID : this.getNode(id).getNeighbourSet()) {
-                    currGraph.addEdge(id, neighbourID);
-                    ((CapGraph) currGraph).getNode(id).addNeighbour(neighbourID);
-                }
-            }
-
-            SCCList.add(currGraph);
-            componentsIDList.clear();
-        }
-
-        return SCCList;
-    }
-
-    /**
-     * Helper method to recursively visit the nodes's neighbours, adding them to the visited set
-     * Once a node with no unvisited neighbours is reached, it's pushed into the finished stack
-     * @param graph The graph on which DFS in being performed
-     * @param currNodeID The node at which DFS is at the moment of the call
-     * @param visited Set of already visited nodes
-     * @param finished Stack of finished nodes in order
-     * @param SCCList List of SCC
-     */
-    private void dfsVisit(Graph graph, int currNodeID, Set<Integer> visited, Stack<Integer> finished, List<Integer> SCCList) {
-	    visited.add(currNodeID);
-	    for (Integer currNodeNeighbour : ((CapGraph)graph).getNode(currNodeID).getNeighbourSet()) {
-	        if (!visited.contains(currNodeNeighbour)) dfsVisit(graph, currNodeNeighbour, visited, finished, SCCList);
-        }
-
-        finished.push(currNodeID);
-	    SCCList.add(currNodeID);
-	}
 
     /**
      * @param graph The graph to transpose
      * @return The transposed version of the graph
      * This method takes a graph as a parameter in case it is needed to transpose a subgraph
-     * at a later date, maybe to find sub-communities and the like.
+     * at a later date, maybe to find sub-communities within sub-comminities and the like
      */
     private Graph transposeGraph(CapGraph graph) {
         Graph transposedGraph = new CapGraph();
@@ -193,9 +109,9 @@ public class CapGraph implements Graph {
     }
 
     /**
-     * @param id of the user of which the second level friends are to be returned.
-     * @return A set of IDs corresponding to the friends of friends of the ID passed as a parameter.
-     * Obviously, direct friends of the center node are filtered.
+     * @param id of the user of which the second level friends are to be returned
+     * @return A set of IDs corresponding to the friends of friends of the ID passed as a parameter
+     * Obviously, direct friends of the center node are filtered
      */
     public Set<Integer> get2ndLevelFriends(int id) {
         if (!isNodeContained(id)) return new HashSet<>();
@@ -203,8 +119,8 @@ public class CapGraph implements Graph {
     }
 
     /**
-     * @param node corresponding to the user of which the second level friends are to be returned.
-     * @return A set of IDs corresponding to the friends of friends of the ID passed as a parameter.
+     * @param node corresponding to the user of which the second level friends are to be returned
+     * @return A set of IDs corresponding to the friends of friends of the ID passed as a parameter
      */
     public Set<Integer> get2ndLevelFriends(CapNode node) {
         List<Integer> nodeNeighbors = node.getNeighbours();
@@ -236,8 +152,35 @@ public class CapGraph implements Graph {
 	    return mapToExport;
 	}
 
+    /**
+     * @return A copy of the set containing node's IDs
+     */
 	public Set<Integer> getNodes() {
         return new HashSet<>(this.nodeSet);
+    }
+
+    /**
+     * This method is package private so that the nodes to be accessible from the outside, since edges might get
+     * unintentionally deleted and references/pointers to objects changed, which is not how this class was meant to be used;
+     * it is only to be used in the construction of the classes and not by whoever might implement it at a later date
+     * @return A HashSet containing the edges in the graph
+     */
+    Set<Edge> getEdges() {
+	    return new HashSet<>(this.edgeList);
+    }
+
+    /**
+     * @return A new HashSet containing a copy of the edges in the graph; this public method, unlike its resembling package-private
+     * getEdges() containing the actual edges, is meant to add the functionality for whomever might implement this classes in
+     * the future. The functionality had to exist, but I didn't want the actual edges returned, to avoid unintentional
+     * tampering of the data
+     */
+    public Set<Edge> getEdgesCopy() {
+        Set<Edge> edgeCopies = new HashSet<>();
+        for (Edge edge : this.edgeList) {
+            edgeCopies.add(new Edge(edge.getFrom(), edge.getTo()));
+        }
+        return edgeCopies;
     }
 
     /**
