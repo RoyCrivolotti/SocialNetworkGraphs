@@ -23,7 +23,6 @@ public class SCC {
 
         componentsIDList.clear();
         List<Graph> SCCList = findSCCsDFS(transposedGraph, finished, componentsIDList, g);
-        transposedGraph = null;
 
         return SCCList;
     }
@@ -71,7 +70,6 @@ public class SCC {
                 currGraph.addVertex(id);
                 for (int neighbourID : g.getNode(id).getNeighbourSet()) {
                     currGraph.addEdge(id, neighbourID);
-                    ((CapGraph) currGraph).getNode(id).addNeighbour(neighbourID);
                 }
             }
 

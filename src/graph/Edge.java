@@ -15,10 +15,10 @@ public class Edge {
     }
 
     public int getFrom() {
-        return from;
+        return this.from;
     }
 
     public int getTo() {
-        return to;
+        return this.to;
     }
 }

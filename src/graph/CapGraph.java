@@ -39,8 +39,9 @@ public class CapGraph implements Graph {
      */
 	@Override
 	public void addEdge(int from, int to) {
-	    this.map.get(from).addNeighbour(to);
-	    this.edgeList.add(new Edge(from, to));
+	    Edge newEdge = new Edge(from, to);
+	    this.map.get(from).addNeighbour(newEdge);
+	    this.edgeList.add(newEdge);
 	}
 
     /**
@@ -70,9 +71,7 @@ public class CapGraph implements Graph {
 
             Set<Integer> nodeNeighbour = this.map.get(node).getNeighbourSet();
 
-            nodeNeighbour.stream().filter(centerNeighbours::contains).forEach(currNode -> {
-                egonet.addEdge(node, currNode);
-            });
+            nodeNeighbour.stream().filter(centerNeighbours::contains).forEach(currNode -> egonet.addEdge(node, currNode));
 	    }
 
 		return egonet;
@@ -134,13 +133,121 @@ public class CapGraph implements Graph {
         return secondLevelFriends;
     }
 
-    /**
-     *
-     * @return
+    /** todo TEST WITH JUNIT
+     * @return A Map with 1 single key-value pair; the key represents the ID of the node with a highest
+     * reach in two hops, amd the value being a Set of IDs representing those two hop potentials (first
+     * hop friends/direct friends NOT included).
      */
-//    public Map<Integer, Set<Integer>> getHighestTwoHop() {
-//
-//    }
+    public Map<Integer, Set<Integer>> getHighestTwoHop() {
+        Map<Integer, Set<Integer>> returnValue = new HashMap<>();
+        int highestTwoHopReachID = 0;
+        Set<Integer> highestTwoHop = new HashSet<>();
+
+        for (Integer id : this.map.keySet()) {
+            HashSet<Integer> currTwoHopSet = (HashSet<Integer>) this.get2ndLevelFriends(this.map.get(id));
+            if (currTwoHopSet.size() > highestTwoHop.size()) {
+                highestTwoHopReachID = id;
+                highestTwoHop = (Set<Integer>) currTwoHopSet.clone();
+            }
+        }
+
+        if (highestTwoHopReachID != 0) returnValue.put(highestTwoHopReachID, highestTwoHop);
+        return returnValue;
+    }
+
+    /**
+     * See Brandes paper to get an in depth explanation of the algorithm, or the other references cited in
+     * the project's scope definition file
+     * @param graph on which the edge betweenness centrality is to be calculated
+     * @return A Map which pairs said edges with their score
+     * Given the complexity of the algorithm, the stages where divided (and appropriately commented) as
+     * Green, McColl and Bader do in their paper from 2012 (see the file with all academic references used
+     * for the project)
+     */
+    public Map<Edge, Double> getWeight(CapGraph graph) {
+        if (graph == null) throw new NullPointerException("The argument passed to this function points to a null value");
+
+        Map<Edge, Double> edgeBetweenness = new HashMap<>();
+
+        // The betweenness centrality score of each edge is initialized to zero (stage 0)
+        for (Edge edge : graph.getEdges()) {
+            edgeBetweenness.put(edge, 0.0);
+        }
+
+        // Stages 1, 2 and 3 are performed for every node in the graph
+        for (Integer id : graph.getNodes()) {
+            Node currNode = graph.getNode(id);
+
+            // Initialization of data structures: a Stack, a Queue and three collections –one collection
+            // to count the number of shortest paths from each node to the current root, one to measure
+            // the distance from each node to the current root, and one final collection of linked lists
+            // to keep track of the vertices that precede each root in a traversal – Stage 1
+
+            Queue<Node> queue = new LinkedList<>();
+            Stack<Node> endNodeStack = new Stack<>();
+            Map<Node, List<Edge>> shortestPath = new HashMap<>();
+            Map<Node, Integer> amountOfShortestPaths = new HashMap<>();
+            Map<Node, Double> shortestPathLength = new HashMap<>();
+
+            for (Integer endNodeID : graph.getNodes()) {
+                Node currEndNode = graph.getNode(endNodeID);
+                shortestPath.put(currEndNode, new LinkedList<>());
+                amountOfShortestPaths.put(currEndNode, 0); //
+                shortestPathLength.put(currEndNode, Double.POSITIVE_INFINITY);
+            }
+
+            // By definition in Brandes's original paper, the distance from a node to itself is zero
+            amountOfShortestPaths.put(currNode, 1);
+            shortestPathLength.put(currNode, 0.0);
+
+            queue.add(currNode);
+
+            // Main loop – Stage 2
+            while (!queue.isEmpty()) {
+                Node prevNode = queue.remove();
+                endNodeStack.push(prevNode);
+
+                for (Edge edge : ((CapNode) prevNode).getOutgoingEdges()) {
+                    Node neighbour = graph.getNode(edge.getTo());
+
+                    // If its the first time its encountered
+                    if (shortestPathLength.get(neighbour) == Double.POSITIVE_INFINITY) {
+                        queue.add(neighbour);
+                        shortestPathLength.put(neighbour, shortestPathLength.get(prevNode) + 1);
+                    }
+
+                    // If its a shortest path
+                    if (shortestPathLength.get(neighbour) == shortestPathLength.get(prevNode) + 1) {
+                        amountOfShortestPaths.put(neighbour, amountOfShortestPaths.get(neighbour) + amountOfShortestPaths.get(prevNode));
+                        shortestPath.get(neighbour).add(edge);
+                    }
+                }
+            }
+
+            // Dependency accumulation based on the back-propagation of dependencies from a node to
+            // its predecessors – Stage 3
+            Map<Edge, Double> dependency = new HashMap<>();
+            for (Edge edge : graph.getEdges()) {
+                dependency.put(edge, 0.0);
+            }
+
+            while (!endNodeStack.isEmpty()) {
+                Node node = endNodeStack.pop();
+                double sum = 0.0;
+
+                for (Edge edge : ((CapNode) node).getOutgoingEdges()) {
+                    sum += dependency.get(edge);
+                }
+
+                for (Edge edge : shortestPath.get(node)) {
+                    dependency.put(edge, (double) (amountOfShortestPaths.get(graph.getNode(edge.getFrom())) / amountOfShortestPaths.get(node)) * (1.0 + sum));
+                    edgeBetweenness.put(edge, edgeBetweenness.get(edge) + dependency.get(edge));
+                }
+            }
+        }
+
+        return edgeBetweenness;
+    }
 
     /**
      * {@inheritDoc}
@@ -172,7 +279,7 @@ public class CapGraph implements Graph {
      * it is only to be used in the construction of the classes and not by whoever might implement it at a later date
      * @return A HashSet containing the edges in the graph
      */
-    Set<Edge> getEdges() {
+    private Set<Edge> getEdges() {
 	    return new HashSet<>(this.edgeList);
     }
 
@@ -205,7 +312,7 @@ public class CapGraph implements Graph {
     }
 
     /**
-     * @param id
+     * @param id of the node to check
      * @return A boolean which states if the ID corresponds to a node in the loaded graph
      */
     public boolean isNodeContained(int id) {

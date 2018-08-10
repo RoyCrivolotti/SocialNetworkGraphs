@@ -7,7 +7,7 @@ import java.util.List;
  */
 
 public interface Node {
-    public int getId();
-    public boolean addNeighbour(int neighbour);
-    public List<Integer> getNeighbours();
+    int getId();
+    boolean addNeighbour(Edge edge);
+    List<Integer> getNeighbours();
 }

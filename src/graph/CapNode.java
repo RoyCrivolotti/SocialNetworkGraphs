@@ -15,11 +15,13 @@ public class CapNode implements Node {
     private int id;
     private List<Integer> neighbours;
     private Set<Integer> neighbourSet;
+    private Set<Edge> outgoingEdges;
 
     public CapNode(int id) {
         this.id = id;
         this.neighbours = new ArrayList<>();
         this.neighbourSet = new HashSet<>();
+        this.outgoingEdges = new HashSet<>();
     }
 
     @Override
@@ -28,8 +30,9 @@ public class CapNode implements Node {
     }
 
     @Override
-    public boolean addNeighbour(int neighbour) {
-        return (this.neighbours.add(neighbour) && this.neighbourSet.add(neighbour));
+    public boolean addNeighbour(Edge outEdge) {
+        this.outgoingEdges.add(outEdge);
+        return (this.neighbours.add(outEdge.getTo()) && this.neighbourSet.add(outEdge.getTo()));
     }
 
     @Override
@@ -43,5 +46,9 @@ public class CapNode implements Node {
 
     public HashSet<Integer> getNeighbourSet() {
         return new HashSet<>(this.neighbourSet);
+    }
+
+    Set<Edge> getOutgoingEdges() {
+        return this.outgoingEdges;
     }
 }
