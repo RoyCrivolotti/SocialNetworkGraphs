@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
  * For the warm up assignment, I must implement my Graph in this class
  */
 
-public class CapGraph implements Graph {
+public class CapGraph implements Graph, Cloneable {
     private Map<Integer, CapNode> map;
     private Set<Integer> nodeSet;
     private List<Edge> edgeList;
@@ -18,6 +18,23 @@ public class CapGraph implements Graph {
         this.map = new HashMap<>();
         this.nodeSet = new HashSet<>();
         this.edgeList = new LinkedList<>();
+    }
+
+    /**
+     * Copy constructor to clone the object, instead of using the Cloneable interface's clone() method, per
+     * Bloch's recommendations; I simply implement the Cloneable interface to catch the exception
+     * @param graph The Graph object to be deep copied
+     */
+    public CapGraph(CapGraph graph) {
+        this();
+        if (graph.nodeSet.isEmpty() || graph.edgeList.isEmpty())
+            throw new NullPointerException("Properly load data to the Graph object before cloning it");
+
+        CapGraph clone = new CapGraph();
+
+        // Every member variable is updated in the two main method addVertex and addEdge
+        graph.getNodes().forEach(clone::addVertex);
+        graph.getEdges().forEach(edge -> clone.addEdge(edge.getFrom(), edge.getTo()));
     }
 
     /**
@@ -63,13 +80,13 @@ public class CapGraph implements Graph {
 	    CapGraph egonet = new CapGraph();
 	    egonet.addVertex(center);
 
-        Set<Integer> centerNeighbours = this.map.get(center).getNeighbourSet();
+        Set<Integer> centerNeighbours = this.map.get(center).getNeighbours();
 
         for (Integer node : centerNeighbours) {
             egonet.addVertex(node);
             egonet.addEdge(center, node);
 
-            Set<Integer> nodeNeighbour = this.map.get(node).getNeighbourSet();
+            Set<Integer> nodeNeighbour = this.map.get(node).getNeighbours();
 
             nodeNeighbour.stream().filter(centerNeighbours::contains).forEach(currNode -> egonet.addEdge(node, currNode));
 	    }
@@ -121,11 +138,11 @@ public class CapGraph implements Graph {
      * @return A set of IDs corresponding to the friends of friends of the ID passed as a parameter
      */
     public Set<Integer> get2ndLevelFriends(CapNode node) {
-        List<Integer> nodeNeighbors = node.getNeighbours();
+        Set<Integer> nodeNeighbors = node.getNeighbours();
         Set<Integer> secondLevelFriends = new HashSet<>();
 
         for (Integer neighbour : nodeNeighbors) {
-            Set<Integer> secondNeighbors = this.map.get(neighbour).getNeighbourSet();
+            Set<Integer> secondNeighbors = this.map.get(neighbour).getNeighbours();
             secondLevelFriends.addAll(secondNeighbors.stream().filter(i -> !nodeNeighbors.contains(i)).collect(Collectors.toSet()));
         }
 
@@ -133,7 +150,7 @@ public class CapGraph implements Graph {
         return secondLevelFriends;
     }
 
-    /** todo TEST WITH JUNIT
+    /** TODO Write JUnit tests for this method
      * @return A Map with 1 single key-value pair; the key represents the ID of the node with a highest
      * reach in two hops, amd the value being a Set of IDs representing those two hop potentials (first
      * hop friends/direct friends NOT included).
@@ -156,100 +173,6 @@ public class CapGraph implements Graph {
     }
 
     /**
-     * See Brandes paper to get an in depth explanation of the algorithm, or the other references cited in
-     * the project's scope definition file
-     * @param graph on which the edge betweenness centrality is to be calculated
-     * @return A Map which pairs said edges with their score
-     * Given the complexity of the algorithm, the stages where divided (and appropriately commented) as
-     * Green, McColl and Bader do in their paper from 2012 (see the file with all academic references used
-     * for the project)
-     */
-    public Map<Edge, Double> getWeight(CapGraph graph) {
-        if (graph == null) throw new NullPointerException("The argument passed to this function points to a null value");
-
-        Map<Edge, Double> edgeBetweenness = new HashMap<>();
-
-        // The betweenness centrality score of each edge is initialized to zero (stage 0)
-        for (Edge edge : graph.getEdges()) {
-            edgeBetweenness.put(edge, 0.0);
-        }
-
-        // Stages 1, 2 and 3 are performed for every node in the graph
-        for (Integer id : graph.getNodes()) {
-            Node currNode = graph.getNode(id);
-
-            // Initialization of data structures: a Stack, a Queue and three collections –one collection
-            // to count the number of shortest paths from each node to the current root, one to measure
-            // the distance from each node to the current root, and one final collection of linked lists
-            // to keep track of the vertices that precede each root in a traversal – Stage 1
-
-            Queue<Node> queue = new LinkedList<>();
-            Stack<Node> endNodeStack = new Stack<>();
-            Map<Node, List<Edge>> shortestPath = new HashMap<>();
-            Map<Node, Integer> amountOfShortestPaths = new HashMap<>();
-            Map<Node, Double> shortestPathLength = new HashMap<>();
-
-            for (Integer endNodeID : graph.getNodes()) {
-                Node currEndNode = graph.getNode(endNodeID);
-                shortestPath.put(currEndNode, new LinkedList<>());
-                amountOfShortestPaths.put(currEndNode, 0); //
-                shortestPathLength.put(currEndNode, Double.POSITIVE_INFINITY);
-            }
-
-            // By definition in Brandes's original paper, the distance from a node to itself is zero
-            amountOfShortestPaths.put(currNode, 1);
-            shortestPathLength.put(currNode, 0.0);
-
-            queue.add(currNode);
-
-            // Main loop – Stage 2
-            while (!queue.isEmpty()) {
-                Node prevNode = queue.remove();
-                endNodeStack.push(prevNode);
-
-                for (Edge edge : ((CapNode) prevNode).getOutgoingEdges()) {
-                    Node neighbour = graph.getNode(edge.getTo());
-
-                    // If its the first time its encountered
-                    if (shortestPathLength.get(neighbour) == Double.POSITIVE_INFINITY) {
-                        queue.add(neighbour);
-                        shortestPathLength.put(neighbour, shortestPathLength.get(prevNode) + 1);
-                    }
-
-                    // If its a shortest path
-                    if (shortestPathLength.get(neighbour) == shortestPathLength.get(prevNode) + 1) {
-                        amountOfShortestPaths.put(neighbour, amountOfShortestPaths.get(neighbour) + amountOfShortestPaths.get(prevNode));
-                        shortestPath.get(neighbour).add(edge);
-                    }
-                }
-            }
-
-            // Dependency accumulation based on the back-propagation of dependencies from a node to
-            // its predecessors – Stage 3
-            Map<Edge, Double> dependency = new HashMap<>();
-            for (Edge edge : graph.getEdges()) {
-                dependency.put(edge, 0.0);
-            }
-
-            while (!endNodeStack.isEmpty()) {
-                Node node = endNodeStack.pop();
-                double sum = 0.0;
-
-                for (Edge edge : ((CapNode) node).getOutgoingEdges()) {
-                    sum += dependency.get(edge);
-                }
-
-                for (Edge edge : shortestPath.get(node)) {
-                    dependency.put(edge, (double) (amountOfShortestPaths.get(graph.getNode(edge.getFrom())) / amountOfShortestPaths.get(node)) * (1.0 + sum));
-                    edgeBetweenness.put(edge, edgeBetweenness.get(edge) + dependency.get(edge));
-                }
-            }
-        }
-
-        return edgeBetweenness;
-    }
-
-    /**
      * {@inheritDoc}
      * @return A Map with every node in the graph, each associated
      * with a Set of the nodes that are reachable from said vertex
@@ -259,11 +182,18 @@ public class CapGraph implements Graph {
 	    HashMap<Integer, HashSet<Integer>> mapToExport = new HashMap<>();
 
 	    for (Integer id : this.nodeSet) {
-	        HashSet<Integer> currNeighbours = this.map.get(id).getNeighbourSet();
-	        mapToExport.put(id, currNeighbours);
+	        Set<Integer> currNeighbours = this.map.get(id).getNeighbours();
+	        mapToExport.put(id, (HashSet<Integer>) currNeighbours);
         }
-
 	    return mapToExport;
+	}
+
+    /**
+     * @throws CloneNotSupportedException to specify that this class uses a copy constructor to perform a deep copy
+     */
+	@Override
+	public Graph clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("To deep copy a CapGraph instance use the copy constructor by using the 'new' keyword and passing the object to be copied as a parameter.");
 	}
 
     /**
@@ -274,20 +204,28 @@ public class CapGraph implements Graph {
     }
 
     /**
+     * @param id of the node to check
+     * @return A boolean which states if the ID corresponds to a node in the loaded graph
+     */
+    public boolean isNodeContained(int id) {
+        return this.nodeSet.contains(id);
+    }
+
+    /**
      * This method is package private so that the nodes to be accessible from the outside, since edges might get
      * unintentionally deleted and references/pointers to objects changed, which is not how this class was meant to be used;
      * it is only to be used in the construction of the classes and not by whoever might implement it at a later date
      * @return A HashSet containing the edges in the graph
      */
-    private Set<Edge> getEdges() {
+    Set<Edge> getEdges() {
 	    return new HashSet<>(this.edgeList);
     }
 
     /**
-     * @return A new HashSet containing a copy of the edges in the graph; this public method, unlike its resembling package-private
-     * getEdges() containing the actual edges, is meant to add the functionality for whomever might implement this classes in
-     * the future. The functionality had to exist, but I didn't want the actual edges returned, to avoid unintentional
-     * tampering of the data
+     * @return A new HashSet containing a copy of the edges in the graph; this public method, unlike its resembling
+     * package-private getEdges() containing the actual edges, is meant to add the functionality for whomever might
+     * implement this classes in the future. The functionality had to exist, but I didn't want the actual edges
+     * returned, to avoid unintentional tampering of the data
      */
     public Set<Edge> getEdgesCopy() {
         Set<Edge> edgeCopies = new HashSet<>();
@@ -297,26 +235,29 @@ public class CapGraph implements Graph {
         return edgeCopies;
     }
 
-    /**
-     * @return The amount of nodes in the graph
-     */
-	public int getSize() {
-	    return this.size;
+    boolean deleteEdge(Edge edge) {
+        if (edge == null) throw new NullPointerException("Attempted to delete an edge pointing to a null value.");
+        boolean deletedProperly = false;
+
+        CapNode fromNode = this.getNode(edge.getFrom());
+        CapNode toNode = this.getNode(edge.getTo());
+        deletedProperly = this.edgeList.remove(edge) && fromNode.removeNeighbor(toNode.getId()) && toNode.removeNeighbor(fromNode.getId());
+
+        return deletedProperly;
     }
 
     /**
      * @return The amount of edges in the graph
      */
     public int getEdgeAmount() {
-	    return this.edgeList.size();
+        return this.edgeList.size();
     }
 
     /**
-     * @param id of the node to check
-     * @return A boolean which states if the ID corresponds to a node in the loaded graph
+     * @return The amount of nodes in the graph
      */
-    public boolean isNodeContained(int id) {
-        return this.nodeSet.contains(id);
+	public int getSize() {
+	    return this.size;
     }
 
     public static void main(String[] args) {

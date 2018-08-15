@@ -68,7 +68,7 @@ public class SCC {
 
             for (int id : componentsIDList) {
                 currGraph.addVertex(id);
-                for (int neighbourID : g.getNode(id).getNeighbourSet()) {
+                for (int neighbourID : g.getNode(id).getNeighbours()) {
                     currGraph.addEdge(id, neighbourID);
                 }
             }
@@ -91,7 +91,7 @@ public class SCC {
      */
     private void dfsVisit(Graph graph, int currNodeID, Set<Integer> visited, Stack<Integer> finished, List<Integer> SCCList) {
         visited.add(currNodeID);
-        for (Integer currNodeNeighbour : ((CapGraph)graph).getNode(currNodeID).getNeighbourSet()) {
+        for (Integer currNodeNeighbour : ((CapGraph)graph).getNode(currNodeID).getNeighbours()) {
             if (!visited.contains(currNodeNeighbour)) dfsVisit(graph, currNodeNeighbour, visited, finished, SCCList);
         }
 

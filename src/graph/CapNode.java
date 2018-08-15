@@ -1,8 +1,6 @@
 package graph;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -13,14 +11,12 @@ import java.util.Set;
 
 public class CapNode implements Node {
     private int id;
-    private List<Integer> neighbours;
-    private Set<Integer> neighbourSet;
+    private Set<Integer> neighbours;
     private Set<Edge> outgoingEdges;
 
     public CapNode(int id) {
         this.id = id;
-        this.neighbours = new ArrayList<>();
-        this.neighbourSet = new HashSet<>();
+        this.neighbours = new HashSet<>();
         this.outgoingEdges = new HashSet<>();
     }
 
@@ -32,20 +28,20 @@ public class CapNode implements Node {
     @Override
     public boolean addNeighbour(Edge outEdge) {
         this.outgoingEdges.add(outEdge);
-        return (this.neighbours.add(outEdge.getTo()) && this.neighbourSet.add(outEdge.getTo()));
+        return this.neighbours.add(outEdge.getTo());
     }
 
     @Override
-    public List<Integer> getNeighbours() {
-        return new ArrayList<>(this.neighbours);
+    public Set<Integer> getNeighbours() {
+        return new HashSet<>(this.neighbours);
     }
 
     public boolean hasNeighbour(int neighbourID) {
-        return this.neighbourSet.contains(neighbourID);
+        return this.neighbours.contains(neighbourID);
     }
 
-    public HashSet<Integer> getNeighbourSet() {
-        return new HashSet<>(this.neighbourSet);
+    boolean removeNeighbor(Integer id) {
+        return this.neighbours.remove(id);
     }
 
     Set<Edge> getOutgoingEdges() {

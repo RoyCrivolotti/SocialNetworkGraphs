@@ -1,6 +1,6 @@
 package graph;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Roy Gabriel Crivolotti
@@ -9,5 +9,5 @@ import java.util.List;
 public interface Node {
     int getId();
     boolean addNeighbour(Edge edge);
-    List<Integer> getNeighbours();
+    Set<Integer> getNeighbours();
 }

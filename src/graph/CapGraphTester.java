@@ -69,7 +69,7 @@ public class CapGraphTester {
         assertEquals(2, node1.getNeighbours().size());
         assertTrue(notEmptyGraph.getNode(6).getNeighbours().isEmpty());
 
-        List<Integer> testNeighbours = Arrays.asList(2, 4);
+        Set<Integer> testNeighbours = new HashSet<>(Arrays.asList(2, 4));
         assertEquals(node1.getNeighbours(), testNeighbours);
     }
 
@@ -94,11 +94,11 @@ public class CapGraphTester {
 // Set<Integer> handmadeAnswer = new HashSet<>(Arrays.asList(334, 64, 207, 226, 312, 355, 356, 480, 562, 558, 559, 622, 671, 698, 195, 391, 424, 438, 552, 693, 463, 873, 32, 183, 211, 270, 326, 449, 489, 521, 631, 637, 678, 689, 809, 346, 354, 65, 243, 264, 687, 968));
 // assertEquals(handmadeAnswer, ((CapGraph) testGraph).get2ndLevelFriends(0));
 
-        List<Integer> nodeNeighbors = testGraph.getNode(0).getNeighbours();
+        Set<Integer> nodeNeighbors = testGraph.getNode(0).getNeighbours();
         Set<Integer> secondLevelFriends = new HashSet<>();
 
         for (Integer neighbor : nodeNeighbors) {
-            secondLevelFriends.addAll(testGraph.getNode(neighbor).getNeighbourSet());
+            secondLevelFriends.addAll(testGraph.getNode(neighbor).getNeighbours());
         }
 
         secondLevelFriends.removeAll(nodeNeighbors);
