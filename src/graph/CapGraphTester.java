@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CapGraphTester {
     private CapGraph emptyGraph;
@@ -105,5 +107,69 @@ public class CapGraphTester {
         secondLevelFriends.remove(0);
         assertEquals(secondLevelFriends, testGraph.get2ndLevelFriends(0));
         assertEquals(secondLevelFriends.size(), testGraph.get2ndLevelFriends(0).size());
+    }
+
+    /**
+     * Second test of this method with another case, this one done entirely by hand while testing the
+     * getHighestTwoHop() method
+     */
+    public void testGet2ndLevelFriends() {
+        CapGraph smallTestGraph = new CapGraph();
+        util.GraphLoader.loadGraph(smallTestGraph, "data/small_test_graph.txt");
+        Map<Integer, Set<Integer>> expected = new HashMap<>();
+
+        expected.put(1, Stream.of(2, 3, 7).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(1));
+
+        expected.put(2, Stream.of(1, 3, 7).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(2));
+
+        expected.put(3, Stream.of(2, 1, 7, 6, 8).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(3));
+
+        expected.put(4, Stream.of(5, 6, 7).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(4));
+
+        expected.put(5, Stream.of(4, 6, 7).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(5));
+
+        expected.put(6, Stream.of(4, 5, 7, 3, 8).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(6));
+
+        expected.put(7, Stream.of(4, 5, 1, 2, 9, 12).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(7));
+
+        expected.put(8, Stream.of(2, 3, 6, 10, 11, 13, 14).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(8));
+
+        expected.put(9, Stream.of(8, 10, 7, 11, 12).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(9));
+
+        expected.put(10, Stream.of(8, 9, 10, 11).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(10));
+
+        expected.put(11, Stream.of(8, 9, 10).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(11));
+
+        expected.put(12, Stream.of(8, 13, 14, 7, 9).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(12));
+
+        expected.put(13, Stream.of(12, 14, 8).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(13));
+
+        expected.put(14, Stream.of(12, 13, 8).collect(Collectors.toCollection(HashSet::new)));
+        assertEquals(expected, smallTestGraph.get2ndLevelFriends(14));
+    }
+
+    @Test
+    public void testGetHighestTwoHop() {
+        CapGraph smallTestGraph = new CapGraph();
+        util.GraphLoader.loadGraph(smallTestGraph, "data/small_test_graph.txt");
+
+        Map<Integer, Set<Integer>> expected = new HashMap<>();
+        expected.put(7, Stream.of(4, 5, 1, 2, 9, 12).collect(Collectors.toCollection(HashSet::new)));
+        expected.put(8, Stream.of(3, 6, 10, 11, 13, 14).collect(Collectors.toCollection(HashSet::new)));
+
+        assertEquals(expected, smallTestGraph.getHighestTwoHop());
     }
 }

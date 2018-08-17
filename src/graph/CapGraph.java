@@ -150,26 +150,42 @@ public class CapGraph implements Graph, Cloneable {
         return secondLevelFriends;
     }
 
-    /** TODO Write JUnit tests for this method
-     * @return A Map with 1 single key-value pair; the key represents the ID of the node with a highest
-     * reach in two hops, amd the value being a Set of IDs representing those two hop potentials (first
-     * hop friends/direct friends NOT included).
+    /**
+     * @return A Map where the key represents the ID(s) of the node(s) with a highest reach in two hops, and
+     * the value being a Set of IDs representing those two hop potentials (first hop friends/direct friends NOT included);
+     * if several nodes share that 'highest two hop reach potential', they are both added.
      */
     public Map<Integer, Set<Integer>> getHighestTwoHop() {
         Map<Integer, Set<Integer>> returnValue = new HashMap<>();
-        int highestTwoHopReachID = 0;
-        Set<Integer> highestTwoHop = new HashSet<>();
+        Map<Integer, Set<Integer>> unfilteredMap = new HashMap<>();
+        Map<Integer, Integer> unfilteredMapSizes = new HashMap<>();
 
         for (Integer id : this.map.keySet()) {
-            HashSet<Integer> currTwoHopSet = (HashSet<Integer>) this.get2ndLevelFriends(this.map.get(id));
-            if (currTwoHopSet.size() > highestTwoHop.size()) {
-                highestTwoHopReachID = id;
-                highestTwoHop = (Set<Integer>) currTwoHopSet.clone();
-            }
+            Set<Integer> curr2ndLevelFriends = this.get2ndLevelFriends(id);
+            unfilteredMap.put(id, curr2ndLevelFriends);
+            unfilteredMapSizes.put(id, curr2ndLevelFriends.size());
         }
 
-        if (highestTwoHopReachID != 0) returnValue.put(highestTwoHopReachID, highestTwoHop);
+        if (unfilteredMap.isEmpty()) return unfilteredMap;
+
+        Set<Integer> mostConnectedIDs = getHighestMapValues(unfilteredMap, unfilteredMapSizes);
+        mostConnectedIDs.forEach(id -> returnValue.put(id, unfilteredMap.get(id)));
+
         return returnValue;
+    }
+
+    /**
+     * @param map A map with IDs mapped with a set of their second level connections/friends
+     * @param mapSizes A map with IDs mapped to the size of their set of their second level connections/friends
+     * @return A set with the IDs that have the highest amount of second level connections
+     */
+    private Set<Integer> getHighestMapValues(Map<Integer, Set<Integer>> map, Map<Integer, Integer> mapSizes) {
+        long max = mapSizes.values().stream().max(Comparator.naturalOrder()).get();
+        if (max == 0) return new HashSet<>();
+        return map.entrySet().stream()
+                .filter(e -> e.getValue().size() == max)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -261,11 +277,18 @@ public class CapGraph implements Graph, Cloneable {
     }
 
     public static void main(String[] args) {
-        Graph TwitterGraph = new CapGraph();
-        util.GraphLoader.loadGraph(TwitterGraph, "data/twitter_combined.txt");
+//        Graph TwitterGraph = new CapGraph();
+//        util.GraphLoader.loadGraph(TwitterGraph, "data/twitter_combined.txt");
 
         Graph TestGraph = new CapGraph();
         util.GraphLoader.loadGraph(TestGraph, "data/small_test_graph.txt");
+        Map<Integer, Set<Integer>> highestTwoHopMap = ((CapGraph) TestGraph).getHighestTwoHop();
+
+        highestTwoHopMap.forEach((key, value) -> {
+            System.out.println("The user with highest reach is: " + key);
+            value.forEach(System.out::println);
+        });
+
 
 //        Set<Integer> secondLevelFriends = ((CapGraph) TestGraph).get2ndLevelFriends(0);
 //        System.out.println(secondLevelFriends);
