@@ -39,7 +39,7 @@ public class GraphCommunities {
             long start = System.nanoTime();
             betweenness = getBetweennessScore(graphCopy);
             long end = System.nanoTime();
-            System.out.println((end - start) / 1000000 + " seconds to get bet. score.");
+            System.out.println((end - start) / 1000000000 + " seconds to get bet. score.");
 
             Edge deletedEdge1 = null;
             Edge deletedEdge2 = null;
@@ -221,8 +221,9 @@ public class GraphCommunities {
     private void constructSubgraph(Graph graph, Set<Integer> ids, Edge deletedEdge, Edge deletedEdge2, int iteration) {
         Graph subGraph = new CapGraph();
         ids.forEach(subGraph::addVertex);
-//        System.out.println("Constructing a Graph with " + ids.size() + " nodes.");
 
+        // Construct the graph by exploring the relationships between the IDs reached in through the traversal algorithm
+        // while being careful to exclude the relationship represented by the deleted edge
         for (Integer id : ids) {
             Set<Integer> neighbors = graph.getNode(id).getNeighbours();
             for (Integer id2ndLevel : neighbors) {
@@ -235,8 +236,6 @@ public class GraphCommunities {
             }
         }
 
-//        System.out.println("Amt. of edges: " + ((CapGraph) subGraph).getEdges().size());
-
         if (this.communities.containsKey(iteration)) this.communities.get(iteration).add(subGraph);
         else {
             this.communities.put(iteration, new HashSet<>());
@@ -248,9 +247,7 @@ public class GraphCommunities {
         // Add all previously had/found sub-graphs that aren't the one being processed/divided in this iteration
         if (iteration > 1) {
             for (Graph prevGraph : this.communities.get(iteration-1)) {
-//                this.communities.get(iteration).forEach(subgraph -> {{
                     if (!prevGraph.getNodes().containsAll(subGraph.getNodes())) helperSet.add(prevGraph);
-//                }});
             }
             this.communities.get(iteration).addAll(helperSet);
         }

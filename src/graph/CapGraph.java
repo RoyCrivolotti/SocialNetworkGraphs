@@ -5,11 +5,9 @@ import java.util.stream.Collectors;
 
 /**
  * @author Roy Gabriel Crivolotti
- * For the warm up assignment, I must implement my Graph in this class
  */
 
 public class CapGraph implements Graph, Cloneable {
-    // TODO: 18/08/2018 See about refactoring to use CapNodes instead of IDs in CapGraph class
     private Map<Integer, CapNode> map;
     private Set<Integer> nodeSet;
     private Set<Edge> edgeSet;
@@ -73,6 +71,24 @@ public class CapGraph implements Graph, Cloneable {
      */
     public CapNode getNode(int id) {
 	    return this.map.get(id);
+    }
+
+    /**
+     * This method is public because it works with integers and not the CapNode objects, hence there is little worry of messing
+     * with the integrity of the objects and the program
+     * @return A copy of the set containing node's IDs
+     */
+    public Set<Integer> getNodes() {
+        return new HashSet<>(this.nodeSet);
+    }
+
+    /**
+     * This method is package private so that since edges might get unintentionally deleted by changing references/pointers
+     * to objects changed, which is not how this class was meant to be used
+     * @return The actual member variable/HashSet containing the edges in the graph
+     */
+    Set<Edge> getEdges() {
+        return this.edgeSet;
     }
 
     /**
@@ -209,53 +225,6 @@ public class CapGraph implements Graph, Cloneable {
 	    return mapToExport;
 	}
 
-    /**
-     * @throws CloneNotSupportedException to specify that this class uses a copy constructor to perform a deep copy
-     */
-	@Override
-	public Graph clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("To deep copy a CapGraph instance use the copy constructor by using the 'new' keyword and passing the object to be copied as a parameter.");
-	}
-
-    /**
-     * @return A copy of the set containing node's IDs
-     */
-	public Set<Integer> getNodes() {
-        return new HashSet<>(this.nodeSet);
-    }
-
-    /**
-     * @param id of the node to check
-     * @return A boolean which states if the ID corresponds to a node in the loaded graph
-     */
-    public boolean containsNode(int id) {
-        return this.nodeSet.contains(id);
-    }
-
-    /**
-     * This method is package private so that the nodes to be accessible from the outside, since edges might get
-     * unintentionally deleted and references/pointers to objects changed, which is not how this class was meant to be used;
-     * it is only to be used in the construction of the classes and not by whoever might implement it at a later date
-     * @return A HashSet containing the edges in the graph
-     */
-    Set<Edge> getEdges() {
-	    return new HashSet<>(this.edgeSet);
-    }
-
-    /**
-     * @return A new HashSet containing a copy of the edges in the graph; this public method, unlike its resembling
-     * package-private getEdges() containing the actual edges, is meant to add the functionality for whomever might
-     * implement this classes in the future. The functionality had to exist, but I didn't want the actual edges
-     * returned, to avoid unintentional tampering of the data
-     */
-    public Set<Edge> getEdgeCopies() {
-        Set<Edge> edgeCopies = new HashSet<>();
-        for (Edge edge : this.edgeSet) {
-            edgeCopies.add(new Edge(edge.getFrom(), edge.getTo()));
-        }
-        return edgeCopies;
-    }
-
     public boolean deleteEdge(Edge edge) {
         if (edge == null) throw new NullPointerException("Attempted to delete an edge pointing to a null value.");
         if (!containsEdge(edge)) return false;
@@ -269,18 +238,28 @@ public class CapGraph implements Graph, Cloneable {
         return this.edgeSet.contains(edge);
     }
 
-    /**
-     * @return The amount of edges in the graph
-     */
     public int getEdgeAmount() {
         return this.edgeSet.size();
     }
 
     /**
-     * @return The amount of nodes in the graph
+     * @param id of the node to check
+     * @return A boolean which states if the ID corresponds to a node in the loaded graph
      */
+    public boolean containsNode(int id) {
+        return this.nodeSet.contains(id);
+    }
+
 	public int getSize() {
 	    return this.size;
+    }
+
+    /**
+     * @throws CloneNotSupportedException to specify that this class uses a copy constructor to perform deep copies
+     */
+    @Override
+    public Graph clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("To deep copy a CapGraph instance use the copy constructor by using the 'new' keyword and passing the object to be copied as a parameter.");
     }
 
     public static void main(String[] args) {
@@ -297,7 +276,7 @@ public class CapGraph implements Graph, Cloneable {
         long start = System.nanoTime();
 
         Graph FacebookGraph = new CapGraph();
-        util.GraphLoader.loadGraph(FacebookGraph, "data/facebook_1000.txt");
+        util.GraphLoader.loadGraph(FacebookGraph, "data/facebook_2000.txt");
         GraphCommunities FacebookTest = new GraphCommunities(FacebookGraph, 30);
         Map<Integer, Set<Graph>> communities = FacebookTest.getCommunities();
 
@@ -311,7 +290,7 @@ public class CapGraph implements Graph, Cloneable {
 //        communities.get(communities.size()).forEach(subgraph -> System.out.println(subgraph.getNodes()));
 
         long end = System.nanoTime();
-        System.out.println((end - start) / 1000000000 + " seconds in total for " + FacebookGraph.getSize() + " nodes and " + ((CapGraph) FacebookGraph).getEdges().size() + " edges.");
+        System.out.println((end - start) / 1000000000 + " seconds in total for " + FacebookGraph.getSize() + " nodes and " + FacebookGraph.getEdgeAmount() + " edges.");
         System.out.println(((end - start) / 1000000000) / 60 + " minutes in total.");
     }
 }

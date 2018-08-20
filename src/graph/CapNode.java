@@ -42,15 +42,10 @@ public class CapNode implements Node {
         return this.neighbours.contains(neighbourID);
     }
 
-    // TODO: 17/08/2018
     boolean removeNeighbor(Integer id, Edge edge) {
-        boolean check = this.neighbours.contains(id) && this.outgoingEdges.contains(edge);
-//        System.out.println("First contains check: " + check);
         this.neighbours.remove(id);
         this.outgoingEdges.remove(edge);
-        check = this.neighbours.contains(id) && this.outgoingEdges.contains(edge);
-//        System.out.println("Second contains check: " + check);
-        return true;
+        return this.neighbours.contains(id) && this.outgoingEdges.contains(edge);
     }
 
     Set<Edge> getOutgoingEdges() {

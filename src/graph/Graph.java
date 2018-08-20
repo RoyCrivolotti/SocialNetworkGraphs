@@ -35,5 +35,7 @@ public interface Graph {
 
     public boolean deleteEdge(Edge edge);
 
+    public int getEdgeAmount();
+
     public int getSize();
-    }
+}
