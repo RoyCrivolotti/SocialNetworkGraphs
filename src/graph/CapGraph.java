@@ -9,15 +9,16 @@ import java.util.stream.Collectors;
  */
 
 public class CapGraph implements Graph, Cloneable {
+    // TODO: 18/08/2018 See about refactoring to use CapNodes instead of IDs in CapGraph class
     private Map<Integer, CapNode> map;
     private Set<Integer> nodeSet;
-    private List<Edge> edgeList;
+    private Set<Edge> edgeSet;
     private int size;
 
     public CapGraph() {
         this.map = new HashMap<>();
         this.nodeSet = new HashSet<>();
-        this.edgeList = new LinkedList<>();
+        this.edgeSet = new HashSet<>();
     }
 
     /**
@@ -25,28 +26,28 @@ public class CapGraph implements Graph, Cloneable {
      * Bloch's recommendations; I simply implement the Cloneable interface to catch the exception
      * @param graph The Graph object to be deep copied
      */
-    public CapGraph(CapGraph graph) {
+    public CapGraph(Graph graph) {
         this();
-        if (graph.nodeSet.isEmpty() || graph.edgeList.isEmpty())
+        if (graph.getNodes().isEmpty() || ((CapGraph)graph).getEdges().isEmpty())
             throw new NullPointerException("Properly load data to the Graph object before cloning it");
 
-        CapGraph clone = new CapGraph();
-
-        // Every member variable is updated in the two main method addVertex and addEdge
-        graph.getNodes().forEach(clone::addVertex);
-        graph.getEdges().forEach(edge -> clone.addEdge(edge.getFrom(), edge.getTo()));
+        Set<Integer> nodes = graph.getNodes();
+//         Every member variable is updated in the two main method addVertex and addEdge
+        graph.getNodes().forEach(this::addVertex);
+        ((CapGraph)graph).getEdges().forEach(edge -> this.addEdge(edge.getFrom(), edge.getTo()));
     }
 
     /**
      * {@inheritDoc}
      * @param id Node being added
+     * @return true if the node is added to the set, false otherwise
      */
 	@Override
-	public void addVertex(int id) {
-	    if (this.nodeSet.contains(id)) return;
+	public boolean addVertex(int id) {
+	    if (this.nodeSet.contains(id)) return false;
         this.map.put(id, new CapNode(id));
-        this.nodeSet.add(id);
         this.size++;
+        return this.nodeSet.add(id);
 	}
 
     /**
@@ -55,11 +56,16 @@ public class CapGraph implements Graph, Cloneable {
      * @param to Node where the edge points towards
      */
 	@Override
-	public void addEdge(int from, int to) {
+	public void addEdge (int from, int to) {
 	    Edge newEdge = new Edge(from, to);
 	    this.map.get(from).addNeighbour(newEdge);
-	    this.edgeList.add(newEdge);
+	    this.edgeSet.add(newEdge);
 	}
+
+	public void addEdge (Edge newEdge) {
+	    this.map.get(newEdge.getFrom()).addNeighbour(newEdge);
+	    this.edgeSet.add(newEdge);
+    }
 
     /**
      * @param id ID of the node to return
@@ -116,7 +122,7 @@ public class CapGraph implements Graph, Cloneable {
             transposedGraph.addVertex(id);
         }
 
-        for (Edge edge : this.edgeList) {
+        for (Edge edge : this.edgeSet) {
             transposedGraph.addEdge(edge.getTo(), edge.getFrom());
         }
 
@@ -129,7 +135,7 @@ public class CapGraph implements Graph, Cloneable {
      * Obviously, direct friends of the center node are filtered
      */
     public Set<Integer> get2ndLevelFriends(int id) {
-        if (!isNodeContained(id)) return new HashSet<>();
+        if (!containsNode(id)) return new HashSet<>();
         return get2ndLevelFriends(this.map.get(id));
     }
 
@@ -158,17 +164,17 @@ public class CapGraph implements Graph, Cloneable {
     public Map<Integer, Set<Integer>> getHighestTwoHop() {
         Map<Integer, Set<Integer>> returnValue = new HashMap<>();
         Map<Integer, Set<Integer>> unfilteredMap = new HashMap<>();
-        Map<Integer, Integer> unfilteredMapSizes = new HashMap<>();
+        int highestReach = 0;
 
         for (Integer id : this.map.keySet()) {
             Set<Integer> curr2ndLevelFriends = this.get2ndLevelFriends(id);
             unfilteredMap.put(id, curr2ndLevelFriends);
-            unfilteredMapSizes.put(id, curr2ndLevelFriends.size());
+            if (curr2ndLevelFriends.size() > highestReach) highestReach = curr2ndLevelFriends.size();
         }
 
         if (unfilteredMap.isEmpty()) return unfilteredMap;
 
-        Set<Integer> mostConnectedIDs = getHighestMapValues(unfilteredMap, unfilteredMapSizes);
+        Set<Integer> mostConnectedIDs = getHighestMapValues(unfilteredMap, highestReach);
         mostConnectedIDs.forEach(id -> returnValue.put(id, unfilteredMap.get(id)));
 
         return returnValue;
@@ -176,14 +182,13 @@ public class CapGraph implements Graph, Cloneable {
 
     /**
      * @param map A map with IDs mapped with a set of their second level connections/friends
-     * @param mapSizes A map with IDs mapped to the size of their set of their second level connections/friends
+     * @param highestReach An integer with the highest reach recorded when building the map
      * @return A set with the IDs that have the highest amount of second level connections
      */
-    private Set<Integer> getHighestMapValues(Map<Integer, Set<Integer>> map, Map<Integer, Integer> mapSizes) {
-        long max = mapSizes.values().stream().max(Comparator.naturalOrder()).get();
-        if (max == 0) return new HashSet<>();
+    private Set<Integer> getHighestMapValues(Map<Integer, Set<Integer>> map, int highestReach) {
+        if (highestReach == 0) return new HashSet<>();
         return map.entrySet().stream()
-                .filter(e -> e.getValue().size() == max)
+                .filter(e -> e.getValue().size() == highestReach)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }
@@ -223,7 +228,7 @@ public class CapGraph implements Graph, Cloneable {
      * @param id of the node to check
      * @return A boolean which states if the ID corresponds to a node in the loaded graph
      */
-    public boolean isNodeContained(int id) {
+    public boolean containsNode(int id) {
         return this.nodeSet.contains(id);
     }
 
@@ -234,7 +239,7 @@ public class CapGraph implements Graph, Cloneable {
      * @return A HashSet containing the edges in the graph
      */
     Set<Edge> getEdges() {
-	    return new HashSet<>(this.edgeList);
+	    return new HashSet<>(this.edgeSet);
     }
 
     /**
@@ -243,30 +248,32 @@ public class CapGraph implements Graph, Cloneable {
      * implement this classes in the future. The functionality had to exist, but I didn't want the actual edges
      * returned, to avoid unintentional tampering of the data
      */
-    public Set<Edge> getEdgesCopy() {
+    public Set<Edge> getEdgeCopies() {
         Set<Edge> edgeCopies = new HashSet<>();
-        for (Edge edge : this.edgeList) {
+        for (Edge edge : this.edgeSet) {
             edgeCopies.add(new Edge(edge.getFrom(), edge.getTo()));
         }
         return edgeCopies;
     }
 
-    boolean deleteEdge(Edge edge) {
+    public boolean deleteEdge(Edge edge) {
         if (edge == null) throw new NullPointerException("Attempted to delete an edge pointing to a null value.");
-        boolean deletedProperly = false;
+        if (!containsEdge(edge)) return false;
 
         CapNode fromNode = this.getNode(edge.getFrom());
         CapNode toNode = this.getNode(edge.getTo());
-        deletedProperly = this.edgeList.remove(edge) && fromNode.removeNeighbor(toNode.getId()) && toNode.removeNeighbor(fromNode.getId());
+        return this.edgeSet.remove(edge) && fromNode.removeNeighbor(toNode.getId(), edge) && toNode.removeNeighbor(fromNode.getId(), edge);
+    }
 
-        return deletedProperly;
+    public boolean containsEdge(Edge edge) {
+        return this.edgeSet.contains(edge);
     }
 
     /**
      * @return The amount of edges in the graph
      */
     public int getEdgeAmount() {
-        return this.edgeList.size();
+        return this.edgeSet.size();
     }
 
     /**
@@ -277,27 +284,34 @@ public class CapGraph implements Graph, Cloneable {
     }
 
     public static void main(String[] args) {
-//        Graph TwitterGraph = new CapGraph();
-//        util.GraphLoader.loadGraph(TwitterGraph, "data/twitter_combined.txt");
-
-        Graph TestGraph = new CapGraph();
-        util.GraphLoader.loadGraph(TestGraph, "data/small_test_graph.txt");
-        Map<Integer, Set<Integer>> highestTwoHopMap = ((CapGraph) TestGraph).getHighestTwoHop();
-
-        highestTwoHopMap.forEach((key, value) -> {
-            System.out.println("The user with highest reach is: " + key);
-            value.forEach(System.out::println);
-        });
-
+//        CapGraph TestGraph2 = new CapGraph();
+//        util.GraphLoader.loadGraph(TestGraph2, "data/small_test_graph_2.txt");
+//        GraphCommunities CommunitiesTest = new GraphCommunities(TestGraph2, 10);
+//        Map<Integer, Set<Graph>> communities = CommunitiesTest.getCommunities();
+//        System.out.println("\n\n\n");
+//        communities.get(communities.size()).forEach(graph -> System.out.println(graph.getNodes()));
 
 //        Set<Integer> secondLevelFriends = ((CapGraph) TestGraph).get2ndLevelFriends(0);
 //        System.out.println(secondLevelFriends);
-//
-//        Graph FacebookGraph = new CapGraph();
-//        util.GraphLoader.loadGraph(FacebookGraph, "data/facebook_1000.txt");
-//
-//        secondLevelFriends = ((CapGraph) FacebookGraph).get2ndLevelFriends(0);
-//        System.out.println(secondLevelFriends);
-//        System.out.println(secondLevelFriends.size());
+
+        long start = System.nanoTime();
+
+        Graph FacebookGraph = new CapGraph();
+        util.GraphLoader.loadGraph(FacebookGraph, "data/facebook_1000.txt");
+        GraphCommunities FacebookTest = new GraphCommunities(FacebookGraph, 30);
+        Map<Integer, Set<Graph>> communities = FacebookTest.getCommunities();
+
+        communities.get(communities.size()).forEach(graph -> System.out.println(graph.getNodes()));
+        int amtOfNodes = 0;
+        for (Graph graph : communities.get(communities.size())) {
+            amtOfNodes += graph.getSize();
+        }
+
+//        System.out.println("It took " + communities.size() + " iterations.");
+//        communities.get(communities.size()).forEach(subgraph -> System.out.println(subgraph.getNodes()));
+
+        long end = System.nanoTime();
+        System.out.println((end - start) / 1000000000 + " seconds in total for " + FacebookGraph.getSize() + " nodes and " + ((CapGraph) FacebookGraph).getEdges().size() + " edges.");
+        System.out.println(((end - start) / 1000000000) / 60 + " minutes in total.");
     }
 }

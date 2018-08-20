@@ -2,10 +2,9 @@ package graph;
 
 /**
  * @author Roy Gabriel Crivolotti
- * This set of tests don't aim to be exhaustive. I do not test here the egonet and SCC methods,
- * since they are more complicated to develop tests on and for that I have the graders. This is
- * just to test a couple of things I wanted to make sure wouldn't bug the more complex algorithms,
- * causing a mistake that I'd chase in the wrong place
+ * This set of tests doesn't aim to be exhaustive. I do not test here the egonet and SCC methods, since they are
+ * more complicated to develop tests on and for that I have the graders provided by the UCSD teachers. This is just
+ * to test the things that I expected to have issues or that I didn't but still could break in unforseeable ways
  */
 
 import static org.junit.Assert.*;
@@ -39,6 +38,28 @@ public class CapGraphTester {
         notEmptyGraph.addEdge(3,4);
         notEmptyGraph.addEdge(1,4);
         notEmptyGraph.addEdge(2,5);
+    }
+
+    @Test
+    public void testCopyConstructor() {
+        CapGraph graph = new CapGraph();
+        util.GraphLoader.loadGraph(graph, "data/small_test_graph_2.txt");
+        CapGraph graphCopy = new CapGraph(graph);
+        assertEquals(graph.getNodes(), graphCopy.getNodes());
+
+        Set<Integer> graphTos = new HashSet<>();
+        graph.getEdges().forEach(edge -> graphTos.add(edge.getTo()));
+        Set<Integer> graphCopyTos = new HashSet<>();
+        graphCopy.getEdges().forEach(edge -> graphCopyTos.add(edge.getTo()));
+
+        assertEquals(graphTos, graphCopyTos);
+
+        Set<Integer> graphFroms = new HashSet<>();
+        graph.getEdges().forEach(edge -> graphFroms.add(edge.getFrom()));
+        Set<Integer> graphCopyFroms = new HashSet<>();
+        graphCopy.getEdges().forEach(edge -> graphCopyFroms.add(edge.getFrom()));
+
+        assertEquals(graphTos, graphCopyTos);
     }
 
     @Test

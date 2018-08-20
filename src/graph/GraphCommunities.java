@@ -2,45 +2,78 @@ package graph;
 
 import java.util.*;
 
-public class GraphCommunities {
-    private Set<CapGraph> communities;
+/**
+ * @author Roy Gabriel Crivolotti
+ * This class is meant to take an already built CapGraph object and apply Girvan-Newman's algorithm with Brandes's algorithm to
+ * find the sub-communities in the graph. However, it is a very costly algorithm.
+ */
 
-    public GraphCommunities(CapGraph capGraph) {
-        this.communities = new HashSet<>();
-        detectCommunities(capGraph);
+public class GraphCommunities {
+    private Map<Integer, Set<Graph>> communities;
+
+    public GraphCommunities(Graph graph, int amount) {
+        this.communities = new HashMap<>();
+        detectCommunities(graph, amount);
     }
 
     /**
-     * TODO Write JUnit tests to test the implementation of the algorithm to find communities writing some toy graphs workable by hand and, with that, check the correctness of the implementation of Brandes algorithm
      * Method to implement Girvan-Newman's algorithm to detect communities, based on Brandes algorithm
      * ----- As I start this last part of my project (I started with Brandes algorithm and just now started to
      * implement G-M's loop), I realize that I'm not sure how to remove the edges and keep track of the blocks
-     * that get disconnected to form the sub-communities; hence, I'm not sure how I could, for example, have a set
-     * of sub-graphs representing sub-communities. I'll try to see if there is a visualization tool that can process
-     * a graph with disconnected sub-communities, alleviating me of the work of keeping track of such.
-     * @param capGraph The Graph to be copied and on which to apply said algorithms
+     * that get disconnected to form the sub-communities.
+     * Note: it is essential to note that this algorithms tend to chop off “leaf” nodes –the ones that belong to a community but
+     * are in its periphery, that is they are only loosely connected to that community–, and that it works best on networks that have
+     * a naturally hierarchical (nested) structure; nonetheless, it is a key algorithm, and extremely important in the history
+     * of community detection algorithms.
+     * @param graph The Graph to be copied and on which to apply said algorithms
      */
-    public void detectCommunities(CapGraph capGraph) {
-        CapGraph graphCopy = new CapGraph(capGraph);
+    private void detectCommunities(Graph graph, int communityAmount) {
+        Graph graphCopy = new CapGraph(graph);
         Map<Edge, Double> betweenness;
+        int iteration = 0;
 
-        for (int i = 0; i < 10; i++) {
-            betweenness = getWeight(graphCopy);
-            Edge highScoreEdge = null;
+        do {
+            iteration++;
+            System.out.println("\nIteration number: " + iteration);
+
+            long start = System.nanoTime();
+            betweenness = getBetweennessScore(graphCopy);
+            long end = System.nanoTime();
+            System.out.println((end - start) / 1000000 + " seconds to get bet. score.");
+
+            Edge deletedEdge1 = null;
+            Edge deletedEdge2 = null;
             Double highestScore = 0.0;
 
             for (Edge edge : betweenness.keySet()) {
                 if (betweenness.get(edge) > highestScore) {
-                    highScoreEdge = edge;
                     highestScore = betweenness.get(edge);
+                    deletedEdge1 = edge;
                 }
             }
-            boolean deleteEdge = graphCopy.deleteEdge(highScoreEdge);
-        }
 
-        // At this point the graph (clone-graph) might have disconnected communities and loosely
-        // connected sub-communities
-        differentiateCommunities(graphCopy);
+            if (deletedEdge1 == null) return;
+            graphCopy.deleteEdge(deletedEdge1);
+
+            for (Edge edge : betweenness.keySet()) {
+                if (edge.getFrom() == deletedEdge1.getTo() && edge.getTo() == deletedEdge1.getFrom()) {
+                    graphCopy.deleteEdge(edge);
+                    deletedEdge2 = edge;
+                    System.out.println(edge.getFrom() + " " + edge.getTo());
+                }
+            }
+
+            // Instead of doing BFS on graphCopy, I search for the sub-graph where the high-scoring edge is, and process that one
+            if (iteration == 1) findCommunities(graphCopy, deletedEdge1, deletedEdge2, iteration);
+            else {
+                for (Graph g : this.communities.get(iteration-1)) {
+                    if (g.containsNode(deletedEdge1.getTo())) findCommunities(g, deletedEdge1, deletedEdge2, iteration);
+                }
+            }
+            System.out.println("Amt. of comms. found: " + this.communities.get(iteration).size());
+        }
+        while (this.communities.get(iteration).size() < communityAmount);
+        System.out.println("It took " + iteration + " iterations.");
     }
 
     /**
@@ -52,18 +85,19 @@ public class GraphCommunities {
      * Green, McColl and Bader do in their paper from 2012 (see the file with all academic references used
      * for the project)
      */
-    private Map<Edge, Double> getWeight(CapGraph graph) {
+    private Map<Edge, Double> getBetweennessScore(Graph graph) {
         if (graph == null) throw new NullPointerException("The argument passed to this function points to a null value");
 
         Map<Edge, Double> edgeBetweenness = new HashMap<>();
 
         // The betweenness centrality score of each edge is initialized to zero (stage 0)
-        for (Edge edge : graph.getEdges()) {
+        for (Edge edge : ((CapGraph)graph).getEdges()) {
             edgeBetweenness.put(edge, 0.0);
         }
 
         // Stages 1, 2 and 3 are performed for every node in the graph
         for (Integer id : graph.getNodes()) {
+
             Node currNode = graph.getNode(id);
 
             // Initialization of data structures: a Stack, a Queue and three collections –one collection
@@ -90,6 +124,7 @@ public class GraphCommunities {
 
             queue.add(currNode);
 
+
             // Main loop – Stage 2
             while (!queue.isEmpty()) {
                 Node prevNode = queue.remove();
@@ -115,7 +150,7 @@ public class GraphCommunities {
             // Dependency accumulation based on the back-propagation of dependencies from a node to
             // its predecessors – Stage 3
             Map<Edge, Double> dependency = new HashMap<>();
-            for (Edge edge : graph.getEdges()) {
+            for (Edge edge : ((CapGraph)graph).getEdges()) {
                 dependency.put(edge, 0.0);
             }
 
@@ -124,6 +159,8 @@ public class GraphCommunities {
                 double sum = 0.0;
 
                 for (Edge edge : ((CapNode) node).getOutgoingEdges()) {
+//                    System.out.println("Edge from: " + edge.getFrom() + ", to: " + edge.getTo());
+//                    System.out.println("Score of said edge: " + dependency.get(edge));
                     sum += dependency.get(edge);
                 }
 
@@ -138,24 +175,28 @@ public class GraphCommunities {
     }
 
     /**
-     * TODO Test the traversal algorithm and its helper method constructSubgraph() with JUnit testing
      * I use a BFS-type-algorithm approach to get every connected node in the sub-graph
-     * @param graph
+     * @param graph The sub-graph where the edge being cut is located
      */
-    private void differentiateCommunities(CapGraph graph) {
+    private void findCommunities(Graph graph, Edge deletedEdge, Edge deletedEdge2, int iteration) {
         Set<Integer> visited = new HashSet<>();
         Queue<Integer> queue = new LinkedList<>();
         List<Integer> allNodes = new ArrayList<>(graph.getNodes());
 
+        if (allNodes.isEmpty()) return;
+
         do {
             Set<Integer> ids = new HashSet<>();
-
             queue.add(allNodes.get(new Random().nextInt(allNodes.size())));
+
             while (!queue.isEmpty()) {
                 int currNode = queue.remove();
                 ids.add(currNode);
+                allNodes.remove(Integer.valueOf(currNode));
 
                 List<Integer> currNeighbors = new LinkedList<>(graph.getNode(currNode).getNeighbours());
+                if (currNode == deletedEdge.getFrom()) currNeighbors.remove(Integer.valueOf(deletedEdge.getTo()));
+                if (currNode == deletedEdge2.getFrom()) currNeighbors.remove(Integer.valueOf(deletedEdge2.getTo()));
                 ListIterator<Integer> it = currNeighbors.listIterator(currNeighbors.size());
 
                 while (it.hasPrevious()) {
@@ -166,26 +207,59 @@ public class GraphCommunities {
                     }
                 }
             }
-            constructSubgraph(graph, ids);
-            allNodes.removeAll(visited);
+//            System.out.println("Amount of IDs in subgraph: " + ids.size());
+            constructSubgraph(graph, ids, deletedEdge, deletedEdge2, iteration);
         }
         while (!allNodes.isEmpty());
     }
 
     /**
      * From the set of connected ids/nodes found, it constructs the sub-graph and adds it to the set of sub-communities
-     * @param graph The already processed graph (through the G-M & Brandes algorithms)
-     * @param ids The set of connected ids after G-Ms algorithm removes the edges with highest betweenness
+     * @param graph The sub-graph where the edge being cut is located
+     * @param ids The set of connected ids in the sub-graph after removing the edge with highest betweenness score
      */
-    private void constructSubgraph(CapGraph graph, Set<Integer> ids) {
-        CapGraph subGraph = new CapGraph();
-        ids.forEach(graph::addVertex);
+    private void constructSubgraph(Graph graph, Set<Integer> ids, Edge deletedEdge, Edge deletedEdge2, int iteration) {
+        Graph subGraph = new CapGraph();
+        ids.forEach(subGraph::addVertex);
+//        System.out.println("Constructing a Graph with " + ids.size() + " nodes.");
+
         for (Integer id : ids) {
             Set<Integer> neighbors = graph.getNode(id).getNeighbours();
             for (Integer id2ndLevel : neighbors) {
-                if (ids.contains(id2ndLevel)) subGraph.addEdge(id, id2ndLevel);
+                if (ids.contains(id2ndLevel)) {
+                    Edge newEdge = new Edge(id, id2ndLevel);
+                    subGraph.addEdge(newEdge);
+                    if (deletedEdge.getFrom() == id && deletedEdge.getTo() == id2ndLevel) subGraph.deleteEdge(newEdge);
+                    if (deletedEdge2.getFrom() == id && deletedEdge2.getTo() == id2ndLevel) subGraph.deleteEdge(newEdge);
+                }
             }
         }
-        this.communities.add(subGraph);
+
+//        System.out.println("Amt. of edges: " + ((CapGraph) subGraph).getEdges().size());
+
+        if (this.communities.containsKey(iteration)) this.communities.get(iteration).add(subGraph);
+        else {
+            this.communities.put(iteration, new HashSet<>());
+            this.communities.get(iteration).add(subGraph);
+        }
+
+        Set<Graph> helperSet = new HashSet<>();
+
+        // Add all previously had/found sub-graphs that aren't the one being processed/divided in this iteration
+        if (iteration > 1) {
+            for (Graph prevGraph : this.communities.get(iteration-1)) {
+//                this.communities.get(iteration).forEach(subgraph -> {{
+                    if (!prevGraph.getNodes().containsAll(subGraph.getNodes())) helperSet.add(prevGraph);
+//                }});
+            }
+            this.communities.get(iteration).addAll(helperSet);
+        }
+    }
+
+    /**
+     * @return The actual map with a set of the sub-graphs detected in each iteration
+     */
+    public Map<Integer, Set<Graph>> getCommunities() {
+        return this.communities;
     }
 }

@@ -1,5 +1,7 @@
 package graph;
 
+import com.sun.xml.internal.bind.v2.TODO;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,8 +42,15 @@ public class CapNode implements Node {
         return this.neighbours.contains(neighbourID);
     }
 
-    boolean removeNeighbor(Integer id) {
-        return this.neighbours.remove(id);
+    // TODO: 17/08/2018
+    boolean removeNeighbor(Integer id, Edge edge) {
+        boolean check = this.neighbours.contains(id) && this.outgoingEdges.contains(edge);
+//        System.out.println("First contains check: " + check);
+        this.neighbours.remove(id);
+        this.outgoingEdges.remove(edge);
+        check = this.neighbours.contains(id) && this.outgoingEdges.contains(edge);
+//        System.out.println("Second contains check: " + check);
+        return true;
     }
 
     Set<Edge> getOutgoingEdges() {
